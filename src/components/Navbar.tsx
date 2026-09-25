@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, X, Menu } from 'lucide-react';
 
@@ -14,7 +14,7 @@ interface NavItem {
 
 // 4 clean main sections
 const NAV_ITEMS: NavItem[] = [
-  { id: 'home', label: 'Home', href: '#' },
+  { id: 'home', label: 'Home', href: '#home' },
   { id: 'about', label: 'About', href: '#about' },
   { id: 'events', label: 'Events', href: '#events' },
   { id: 'team', label: 'Team', href: '#team' },
@@ -27,7 +27,37 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Seamless, gapless scroll spy
+  // Lock to prevent scroll-spy from intermediate state flickering during smooth navigation clicks
+  const isManualClickRef = useRef(false);
+  const manualClickTimeoutRef = useRef<number | null>(null);
+
+  // Sync initial hash on mount (e.g. if arriving via direct link like #events or #about)
+  useEffect(() => {
+    const initialHash = window.location.hash.replace('#', '');
+    if (initialHash && ['home', 'about', 'events', 'team'].includes(initialHash)) {
+      setActiveSection(initialHash);
+      const timer = setTimeout(() => {
+        if (initialHash === 'home') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          const el = document.getElementById(initialHash);
+          if (el) {
+            const offset = 80;
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = el.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            window.scrollTo({
+              top: elementPosition - offset,
+              behavior: 'smooth',
+            });
+          }
+        }
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  // Seamless, continuous scroll spy that updates activeSection and URL hash
   useEffect(() => {
     let ticking = false;
 
@@ -37,32 +67,46 @@ export const Navbar: React.FC<NavbarProps> = ({
           const scrollY = window.scrollY;
           setIsScrolled(scrollY > 20);
 
+          // If user clicked a navigation item, do NOT let passing sections interrupt the capsule slide
+          if (isManualClickRef.current) {
+            ticking = false;
+            return;
+          }
+
+          let currentSection = 'home';
+
           // If scrolled near page bottom, securely select team
           if (
             window.innerHeight + scrollY >=
             document.documentElement.scrollHeight - 70
           ) {
-            setActiveSection('team');
-            ticking = false;
-            return;
+            currentSection = 'team';
+          } else {
+            const teamEl = document.getElementById('team');
+            const eventsEl = document.getElementById('events');
+            const aboutEl = document.getElementById('about');
+
+            // Trigger offset when section top enters upper viewport
+            const triggerOffset = 220;
+            const currentPos = scrollY + triggerOffset;
+
+            if (teamEl && currentPos >= teamEl.offsetTop) {
+              currentSection = 'team';
+            } else if (eventsEl && currentPos >= eventsEl.offsetTop) {
+              currentSection = 'events';
+            } else if (aboutEl && currentPos >= aboutEl.offsetTop) {
+              currentSection = 'about';
+            } else {
+              currentSection = 'home';
+            }
           }
 
-          const teamEl = document.getElementById('team');
-          const eventsEl = document.getElementById('events');
-          const aboutEl = document.getElementById('about');
+          setActiveSection(currentSection);
 
-          // Trigger offset when section top enters upper viewport
-          const triggerOffset = 220;
-          const currentPos = scrollY + triggerOffset;
-
-          if (teamEl && currentPos >= teamEl.offsetTop) {
-            setActiveSection('team');
-          } else if (eventsEl && currentPos >= eventsEl.offsetTop) {
-            setActiveSection('events');
-          } else if (aboutEl && currentPos >= aboutEl.offsetTop) {
-            setActiveSection('about');
-          } else {
-            setActiveSection('home');
+          // Update URL hash smoothly without causing physical page jumps or disconnection
+          const targetHash = `#${currentSection}`;
+          if (window.location.hash !== targetHash) {
+            window.history.replaceState(null, '', targetHash);
           }
 
           ticking = false;
@@ -73,19 +117,38 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (manualClickTimeoutRef.current) {
+        clearTimeout(manualClickTimeoutRef.current);
+      }
+    };
   }, []);
 
   const handleNavClick = (item: NavItem) => {
+    // 1. Instantly set target section so the capsule glides directly without hesitation
     setActiveSection(item.id);
     setMobileMenuOpen(false);
 
+    // 2. Lock scroll spy during smooth scroll transition
+    isManualClickRef.current = true;
+    if (manualClickTimeoutRef.current) {
+      clearTimeout(manualClickTimeoutRef.current);
+    }
+    manualClickTimeoutRef.current = window.setTimeout(() => {
+      isManualClickRef.current = false;
+    }, 850);
+
+    // 3. Update URL hash directly
+    window.history.pushState(null, '', `#${item.id}`);
+
+    // 4. Smoothly scroll to target
     if (item.id === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       const targetEl = document.getElementById(item.id);
       if (targetEl) {
-        const offset = 85;
+        const offset = 80;
         const bodyRect = document.body.getBoundingClientRect().top;
         const elementRect = targetEl.getBoundingClientRect().top;
         const elementPosition = elementRect - bodyRect;
@@ -145,9 +208,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                       className="absolute inset-0 bg-white rounded-full shadow-[0_2px_10px_rgba(82,49,255,0.12),0_1px_3px_rgba(0,0,0,0.08)] border border-black/[0.06] z-0"
                       transition={{
                         type: 'spring',
-                        stiffness: 440,
-                        damping: 32,
-                        mass: 0.75,
+                        stiffness: 500,
+                        damping: 35,
+                        mass: 0.55,
                       }}
                     />
                   )}
