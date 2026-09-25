@@ -2,6 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
+import { sanityClient, SANITY_QUERIES } from './lib/sanity';
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, type Variants } from 'motion/react';
