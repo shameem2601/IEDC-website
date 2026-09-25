@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User } from 'firebase/auth';
 import { signInWithPopup, googleProvider, auth, signOut } from '../lib/firebase';
@@ -17,7 +17,7 @@ interface NavItem {
   href: string;
 }
 
-// 4 main sections (contact removed as requested)
+// 4 clean main sections
 const NAV_ITEMS: NavItem[] = [
   { id: 'home', label: 'Home', href: '#' },
   { id: 'about', label: 'About', href: '#about' },
@@ -37,49 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
 
-  // References to desktop nav buttons for rock-solid capsule position calculation
-  const navContainerRef = useRef<HTMLElement>(null);
-  const navItemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
-  const [capsulePos, setCapsulePos] = useState<{ left: number; width: number }>({ left: 4, width: 64 });
-  const [capsuleReady, setCapsuleReady] = useState(false);
-
-  // Update capsule position based on active item index
-  const updateCapsulePosition = (sectionId: string) => {
-    const idx = NAV_ITEMS.findIndex((item) => item.id === sectionId);
-    const safeIdx = idx >= 0 ? idx : 0;
-    const targetEl = navItemRefs.current[safeIdx];
-    const container = navContainerRef.current;
-
-    if (targetEl && container) {
-      const containerRect = container.getBoundingClientRect();
-      const targetRect = targetEl.getBoundingClientRect();
-      const leftOffset = targetRect.left - containerRect.left;
-      setCapsulePos({
-        left: leftOffset,
-        width: targetRect.width,
-      });
-      setCapsuleReady(true);
-    }
-  };
-
-  // Recalculate capsule when activeSection changes or window resizes
-  useEffect(() => {
-    updateCapsulePosition(activeSection);
-
-    const handleResize = () => {
-      updateCapsulePosition(activeSection);
-    };
-
-    window.addEventListener('resize', handleResize);
-    // Double-check after fonts load
-    const timer = setTimeout(() => updateCapsulePosition(activeSection), 100);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      clearTimeout(timer);
-    };
-  }, [activeSection]);
-
-  // Robust scroll spy to detect section on scroll
+  // Seamless, gapless scroll spy
   useEffect(() => {
     let ticking = false;
 
@@ -89,40 +47,31 @@ export const Navbar: React.FC<NavbarProps> = ({
           const scrollY = window.scrollY;
           setIsScrolled(scrollY > 20);
 
-          // Top of page belongs to home
-          if (scrollY < 180) {
-            setActiveSection('home');
-            ticking = false;
-            return;
-          }
-
-          // Bottom of page belongs to team
-          const isAtBottom =
-            window.innerHeight + scrollY >= document.documentElement.scrollHeight - 60;
-          if (isAtBottom) {
+          // If scrolled near page bottom, securely select team
+          if (
+            window.innerHeight + scrollY >=
+            document.documentElement.scrollHeight - 70
+          ) {
             setActiveSection('team');
             ticking = false;
             return;
           }
 
-          // Check section positions from team up to about
-          const sections = ['team', 'events', 'about'];
-          let matched = false;
+          const teamEl = document.getElementById('team');
+          const eventsEl = document.getElementById('events');
+          const aboutEl = document.getElementById('about');
 
-          for (const sId of sections) {
-            const el = document.getElementById(sId);
-            if (el) {
-              const rect = el.getBoundingClientRect();
-              // When the top of section is within upper viewport
-              if (rect.top <= 240 && rect.bottom >= 120) {
-                setActiveSection(sId);
-                matched = true;
-                break;
-              }
-            }
-          }
+          // Trigger offset when section top enters upper viewport
+          const triggerOffset = 220;
+          const currentPos = scrollY + triggerOffset;
 
-          if (!matched && scrollY < 400) {
+          if (teamEl && currentPos >= teamEl.offsetTop) {
+            setActiveSection('team');
+          } else if (eventsEl && currentPos >= eventsEl.offsetTop) {
+            setActiveSection('events');
+          } else if (aboutEl && currentPos >= aboutEl.offsetTop) {
+            setActiveSection('about');
+          } else {
             setActiveSection('home');
           }
 
@@ -137,10 +86,8 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, item: NavItem) => {
-    e.preventDefault();
+  const handleNavClick = (item: NavItem) => {
     setActiveSection(item.id);
-    updateCapsulePosition(item.id);
     setMobileMenuOpen(false);
 
     if (item.id === 'home') {
@@ -191,57 +138,52 @@ export const Navbar: React.FC<NavbarProps> = ({
           }`}
         >
           {/* Logo */}
-          <a
-            href="#"
-            onClick={(e) => handleNavClick(e, NAV_ITEMS[0])}
-            className="group flex items-center gap-1.5 focus:outline-none select-none"
+          <button
+            type="button"
+            onClick={() => handleNavClick(NAV_ITEMS[0])}
+            className="group flex items-center gap-1.5 focus:outline-none select-none cursor-pointer bg-transparent border-0 p-0"
           >
             <span className="font-clash text-lg sm:text-xl text-[#111114] font-bold tracking-tight group-hover:text-[#5231FF] transition-colors">
               IEDC MTM
             </span>
             <span className="w-2 h-2 rounded-full bg-[#5231FF] inline-block group-hover:scale-125 transition-transform duration-300 shadow-[0_0_8px_rgba(82,49,255,0.4)]" />
-          </a>
+          </button>
 
-          {/* Desktop Navigation with Always-Visible Contained Sliding Capsule */}
+          {/* Desktop Navigation with Perfectly Aligned Capsule */}
           <nav
-            ref={navContainerRef}
-            className="hidden md:flex items-center p-1 bg-black/[0.04] border border-black/[0.05] rounded-full relative"
+            role="tablist"
+            className="hidden md:flex items-center gap-1 p-1 bg-black/[0.04] border border-black/[0.05] rounded-full relative"
           >
-            {/* The single persistent sliding capsule (stays strictly inside nav, always visible) */}
-            {capsuleReady && (
-              <motion.div
-                className="absolute top-1 bottom-1 bg-white rounded-full shadow-[0_2px_10px_rgba(82,49,255,0.12),0_1px_3px_rgba(0,0,0,0.08)] border border-black/[0.06] pointer-events-none z-0"
-                initial={false}
-                animate={{
-                  x: capsulePos.left,
-                  width: capsulePos.width,
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 420,
-                  damping: 32,
-                  mass: 0.75,
-                }}
-              />
-            )}
-
-            {NAV_ITEMS.map((item, index) => {
+            {NAV_ITEMS.map((item) => {
               const isActive = activeSection === item.id;
 
               return (
-                <a
+                <button
                   key={item.id}
-                  ref={(el) => {
-                    navItemRefs.current[index] = el;
-                  }}
-                  href={item.href}
-                  onClick={(e) => handleNavClick(e, item)}
-                  className={`relative px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 z-10 select-none ${
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => handleNavClick(item)}
+                  className={`relative px-4 py-1.5 min-w-[74px] text-center text-sm font-semibold rounded-full transition-colors duration-200 select-none cursor-pointer flex items-center justify-center ${
                     isActive ? 'text-[#111114]' : 'text-[#6B6B74] hover:text-[#111114]'
                   }`}
                 >
+                  {/* Shared Layout Capsule with Exact inset-0 Pill Alignment */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-nav-capsule"
+                      className="absolute inset-0 bg-white rounded-full shadow-[0_2px_10px_rgba(82,49,255,0.12),0_1px_3px_rgba(0,0,0,0.08)] border border-black/[0.06] z-0"
+                      transition={{
+                        type: 'spring',
+                        stiffness: 440,
+                        damping: 32,
+                        mass: 0.75,
+                      }}
+                    />
+                  )}
+
                   <span className="relative z-10">{item.label}</span>
-                </a>
+                </button>
               );
             })}
           </nav>
@@ -384,18 +326,18 @@ export const Navbar: React.FC<NavbarProps> = ({
               {NAV_ITEMS.map((item) => {
                 const isActive = activeSection === item.id;
                 return (
-                  <a
+                  <button
                     key={item.id}
-                    href={item.href}
-                    onClick={(e) => handleNavClick(e, item)}
-                    className={`px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+                    type="button"
+                    onClick={() => handleNavClick(item)}
+                    className={`w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${
                       isActive
                         ? 'bg-[#5231FF] text-white font-bold shadow-sm'
                         : 'text-[#6B6B74] hover:text-[#111114] hover:bg-black/5'
                     }`}
                   >
                     {item.label}
-                  </a>
+                  </button>
                 );
               })}
             </div>
@@ -412,7 +354,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-white border border-black/10 rounded-xl text-xs font-semibold text-[#111114] shadow-xs"
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-white border border-black/10 rounded-xl text-xs font-semibold text-[#111114] shadow-xs cursor-pointer"
                 >
                   <LogIn className="w-3.5 h-3.5 text-[#5231FF]" />
                   Sign In with Google

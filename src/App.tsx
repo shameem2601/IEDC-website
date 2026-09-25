@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, type Variants } from 'motion/react';
 import { User } from 'firebase/auth';
 import {
   collection,
@@ -38,6 +38,37 @@ import {
   Mail,
   Phone,
 } from 'lucide-react';
+
+// Variants for staggered entrance animation
+const eventsContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.14,
+      delayChildren: 0.08,
+    },
+  },
+};
+
+const eventCardVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 36,
+    scale: 0.96,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 280,
+      damping: 24,
+      mass: 0.85,
+    },
+  },
+};
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -358,17 +389,25 @@ export default function App() {
               </div>
             </div>
 
-            {/* Events Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Events Grid with Staggered motion.div Entry */}
+            <motion.div
+              variants={eventsContainerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.12 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
               {events.map((evt) => {
                 const isRegistered = userRegistrations.some((r) => r.eventId === evt.id);
                 const attachedCount = (evt.galleryImages?.length || 0) + 1;
 
                 return (
-                  <article
+                  <motion.div
                     key={evt.id}
+                    variants={eventCardVariants}
+                    whileHover={{ y: -6, transition: { duration: 0.25, ease: 'easeOut' } }}
                     onClick={() => handleOpenEventLightbox(evt)}
-                    className="glass-liquid-card group rounded-[24px] overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer hover:-translate-y-1.5"
+                    className="glass-liquid-card group rounded-[24px] overflow-hidden flex flex-col justify-between cursor-pointer"
                   >
                     <div>
                       {/* 16:9 Cover Image Header (As requested: visitors only see the cover image initially) */}
@@ -440,10 +479,10 @@ export default function App() {
                         {evt.attendeeCount} registered
                       </span>
                     </div>
-                  </article>
+                  </motion.div>
                 );
               })}
-            </div>
+            </motion.div>
           </div>
         </section>
 
