@@ -1,4 +1,4 @@
-import { EventItem } from '../types';
+import { EventItem, TeamMember, SiteStats } from '../types';
 
 export const INITIAL_EVENTS: EventItem[] = [
   {
@@ -133,123 +133,154 @@ export const INITIAL_EVENTS: EventItem[] = [
   }
 ];
 
-export const NODAL_OFFICERS = [
+export const NODAL_OFFICERS: TeamMember[] = [
   {
+    id: 'nodal-1',
     name: 'Dr. K. M. Abdul Gafoor',
     role: 'Faculty Nodal Officer',
     initials: 'AG',
     badgeIcon: 'verified',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
+    instagram: 'https://instagram.com',
+    hierarchy: 'nodal',
   },
   {
+    id: 'nodal-2',
     name: 'Prof. Aisha Basheer',
     role: 'Assistant Nodal Officer & IPR Lead',
     initials: 'AB',
     badgeIcon: 'school',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
+    instagram: 'https://instagram.com',
+    hierarchy: 'nodal',
   },
   {
+    id: 'nodal-3',
     name: 'Dr. Muhammed Rashid',
     role: 'Dean & Research Mentor',
     initials: 'MR',
     badgeIcon: 'psychology',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
-  }
+    instagram: 'https://instagram.com',
+    hierarchy: 'nodal',
+  },
 ];
 
-export const EXECUTIVE_MEMBERS = [
+export const EXECUTIVE_MEMBERS: TeamMember[] = [
   {
+    id: 'exec-1',
     name: 'Fidha Rahman',
     role: 'Chief Executive Officer',
     initials: 'FR',
     badgeIcon: 'flag',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
+    instagram: 'https://instagram.com',
+    hierarchy: 'executive',
   },
   {
+    id: 'exec-2',
     name: 'Adil Shan',
     role: 'Chief Operating Officer',
     initials: 'AS',
     badgeIcon: 'settings_suggest',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
+    instagram: 'https://instagram.com',
+    hierarchy: 'executive',
   },
   {
+    id: 'exec-3',
     name: 'Nihal Krishna',
     role: 'Chief Technology Officer',
     initials: 'NK',
     badgeIcon: 'code',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
+    instagram: 'https://instagram.com',
+    hierarchy: 'executive',
   },
   {
+    id: 'exec-4',
     name: 'Shamla Parveen',
     role: 'Chief Creative Officer',
     initials: 'SP',
     badgeIcon: 'palette',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
-  }
+    instagram: 'https://instagram.com',
+    hierarchy: 'executive',
+  },
 ];
 
-export const GENERAL_MEMBERS = [
+export const GENERAL_MEMBERS: TeamMember[] = [
   {
+    id: 'member-1',
     name: 'Rihan K.',
     role: 'Full-Stack Dev Lead',
     initials: 'RK',
     badgeIcon: 'terminal',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
+    instagram: 'https://instagram.com',
+    hierarchy: 'member',
   },
   {
+    id: 'member-2',
     name: 'Fathima Sana',
     role: 'UI/UX Design Lead',
     initials: 'FS',
     badgeIcon: 'brush',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
+    instagram: 'https://instagram.com',
+    hierarchy: 'member',
   },
   {
+    id: 'member-3',
     name: 'Salman Faris',
     role: 'IoT & Hardware Lead',
     initials: 'SF',
     badgeIcon: 'memory',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
+    instagram: 'https://instagram.com',
+    hierarchy: 'member',
   },
   {
+    id: 'member-4',
     name: 'Ananya P.',
     role: 'Grants & Finance Lead',
     initials: 'AP',
     badgeIcon: 'account_balance',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
+    instagram: 'https://instagram.com',
+    hierarchy: 'member',
   },
   {
+    id: 'member-5',
     name: 'Ashiq Bilal',
     role: 'Community & Events Lead',
     initials: 'AB',
     badgeIcon: 'campaign',
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
-    instagram: 'https://instagram.com'
-  }
+    instagram: 'https://instagram.com',
+    hierarchy: 'member',
+  },
 ];
 
 // Retain TEAM_MEMBERS for backward compatibility
-export const TEAM_MEMBERS = [...NODAL_OFFICERS, ...EXECUTIVE_MEMBERS, ...GENERAL_MEMBERS];
+export const TEAM_MEMBERS: TeamMember[] = [...NODAL_OFFICERS, ...EXECUTIVE_MEMBERS, ...GENERAL_MEMBERS];
+
+export const INITIAL_STATS: SiteStats = {
+  eventsHosted: 50,
+  studentsEngaged: 500,
+  startupsIncubated: 10,
+  industryPartners: 15,
+};
 

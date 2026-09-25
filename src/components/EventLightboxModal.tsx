@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { EventItem } from '../types';
-import { User } from 'firebase/auth';
 import confetti from 'canvas-confetti';
 import {
   X,
@@ -27,7 +26,6 @@ interface EventLightboxModalProps {
   onClose: () => void;
   isRegistered: boolean;
   onRegisterToggle: (eventId: string) => Promise<void>;
-  user: User | null;
   onAttachImage?: (eventId: string, imageUrl: string) => Promise<void>;
 }
 
@@ -37,7 +35,6 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
   onClose,
   isRegistered,
   onRegisterToggle,
-  user,
   onAttachImage,
 }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -507,7 +504,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4" />
-                    <span>{user ? 'Register for Event' : 'RSVP with Google'}</span>
+                    <span>Register for Event</span>
                   </>
                 )}
               </button>

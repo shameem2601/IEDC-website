@@ -19,6 +19,7 @@ export interface EventItem {
 }
 
 export interface TeamMember {
+  id: string;
   name: string;
   role: string;
   initials: string;
@@ -26,12 +27,20 @@ export interface TeamMember {
   highlightColor?: string;
   linkedin: string;
   instagram: string;
+  photoUrl?: string;
+  hierarchy: 'nodal' | 'executive' | 'member';
+}
+
+export interface SiteStats {
+  eventsHosted: number;
+  studentsEngaged: number;
+  startupsIncubated: number;
+  industryPartners: number;
 }
 
 export interface EventRegistration {
   id: string;
   eventId: string;
-  userId: string;
   userName: string;
   userEmail: string;
   userPhoto?: string;
@@ -42,7 +51,6 @@ export interface EventRegistration {
 
 export interface ApplicationSubmission {
   id?: string;
-  userId?: string;
   name: string;
   email: string;
   phone: string;
@@ -52,13 +60,4 @@ export interface ApplicationSubmission {
   pitchSummary: string;
   needsGrant: boolean;
   submittedAt: string;
-}
-
-export interface ContactMessage {
-  id?: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  createdAt: string;
 }

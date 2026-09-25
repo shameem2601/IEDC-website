@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { SiteStats } from '../types';
 
 interface StatProps {
   icon: string;
@@ -22,6 +23,12 @@ const StatItem: React.FC<StatProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // If targetValue changed after animation, smoothly transition to new value
+    if (hasAnimated) {
+      setCount(targetValue);
+      return;
+    }
+
     const el = containerRef.current;
     if (!el) return;
 
@@ -90,13 +97,22 @@ const StatItem: React.FC<StatProps> = ({
   );
 };
 
-export const StatsCounterGrid: React.FC = () => {
+interface StatsCounterGridProps {
+  stats?: SiteStats;
+}
+
+export const StatsCounterGrid: React.FC<StatsCounterGridProps> = ({ stats }) => {
+  const eventsVal = stats?.eventsHosted ?? 50;
+  const studentsVal = stats?.studentsEngaged ?? 500;
+  const startupsVal = stats?.startupsIncubated ?? 10;
+  const partnersVal = stats?.industryPartners ?? 15;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
       <StatItem
         icon="calendar_month"
         metricNumber="METRIC // 01"
-        targetValue={50}
+        targetValue={eventsVal}
         label="Events Hosted"
         description="Workshops, hackathons, ideathons & masterclasses."
         delayMs={0}
@@ -104,7 +120,7 @@ export const StatsCounterGrid: React.FC = () => {
       <StatItem
         icon="groups"
         metricNumber="METRIC // 02"
-        targetValue={500}
+        targetValue={studentsVal}
         label="Students Engaged"
         description="Active participants across multidisciplinary cohorts."
         delayMs={120}
@@ -112,7 +128,7 @@ export const StatsCounterGrid: React.FC = () => {
       <StatItem
         icon="lightbulb"
         metricNumber="METRIC // 03"
-        targetValue={10}
+        targetValue={startupsVal}
         label="Startups Incubated"
         description="Student prototypes transitioned into registered ventures."
         delayMs={240}
@@ -120,7 +136,7 @@ export const StatsCounterGrid: React.FC = () => {
       <StatItem
         icon="domain_add"
         metricNumber="METRIC // 04"
-        targetValue={15}
+        targetValue={partnersVal}
         label="Industry Partners"
         description="MoUs with venture hubs, accelerators & tech companies."
         delayMs={360}

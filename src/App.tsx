@@ -5,42 +5,34 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, type Variants } from 'motion/react';
-import { User } from 'firebase/auth';
 import {
   collection,
-  query,
-  where,
   onSnapshot,
   setDoc,
   doc,
   deleteDoc,
-  addDoc,
-  serverTimestamp,
   getDocs,
 } from 'firebase/firestore';
-import { auth, onAuthStateChanged, db } from './lib/firebase';
+import { db } from './lib/firebase';
 import {
   INITIAL_EVENTS,
-  NODAL_OFFICERS,
-  EXECUTIVE_MEMBERS,
-  GENERAL_MEMBERS,
+  INITIAL_STATS,
   TEAM_MEMBERS,
 } from './data/initialEvents';
-import { EventItem, EventRegistration } from './types';
+import { EventItem, TeamMember, SiteStats } from './types';
 import { Navbar } from './components/Navbar';
 import { CursorSpotlight } from './components/CursorSpotlight';
 import { StatsCounterGrid } from './components/StatsCounter';
 import { EventLightboxModal } from './components/EventLightboxModal';
 import { JoinUsModal } from './components/JoinUsModal';
-import { UserRegistrationsModal } from './components/UserRegistrationsModal';
+import { CmsDashboardModal } from './components/CmsDashboardModal';
+import { MemberProfileModal } from './components/MemberProfileModal';
 import {
   ArrowRight,
   CheckCircle2,
   Images,
-  Ticket,
   Sparkles,
   Rocket,
-  ChevronDown,
   Mail,
   Phone,
 } from 'lucide-react';
@@ -77,20 +69,68 @@ const eventCardVariants: Variants = {
 };
 
 export default function App() {
-  const [user, setUser] = useState<User | null>(null);
+  const [stats, setStats] = useState<SiteStats>(INITIAL_STATS);
   const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
-  const [userRegistrations, setUserRegistrations] = useState<EventRegistration[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(TEAM_MEMBERS);
+  const [userRegistrations, setUserRegistrations] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('iedc_event_rsvps');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
+  const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [isCmsModalOpen, setIsCmsModalOpen] = useState(false);
+  const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
 
-  // 1. Firebase Auth listener
+  // Hidden admin access: Ctrl+Shift+A (or Cmd+Shift+A), or visiting with #admin / ?admin=true
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        setIsCmsModalOpen((prev) => !prev);
+      }
+    };
+
+    const checkUrlParams = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin') === 'true' || window.location.hash === '#admin') {
+        setIsCmsModalOpen(true);
+      }
+    };
+
+    checkUrlParams();
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('hashchange', checkUrlParams);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('hashchange', checkUrlParams);
+    };
+  }, []);
+
+  // 1. Firestore Sync for Site Stats
+  useEffect(() => {
+    const statsDocRef = doc(db, 'site_settings', 'stats');
+    const unsub = onSnapshot(
+      statsDocRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          setStats(docSnap.data() as SiteStats);
+        } else {
+          // Initialize stats in Firestore
+          setDoc(statsDocRef, INITIAL_STATS).catch(() => {});
+        }
+      },
+      (err) => {
+        console.warn('Stats sync fallback:', err);
+      }
+    );
+    return () => unsub();
   }, []);
 
   // 2. Firestore Sync for Events
@@ -105,109 +145,101 @@ export default function App() {
             loadedEvents.push({ id: docSnap.id, ...docSnap.data() } as EventItem);
           });
           setEvents(loadedEvents);
-        } else {
-          // Seed initial events to Firestore if collection is empty
-          INITIAL_EVENTS.forEach(async (evt) => {
-            try {
-              await setDoc(doc(db, 'events', evt.id), evt);
-            } catch (e) {
-              // Ignore if offline / security
-            }
-          });
-          setEvents(INITIAL_EVENTS);
         }
       },
       (err) => {
-        console.warn('Events firestore snapshot note:', err);
-        // Fallback to local default data
-        setEvents(INITIAL_EVENTS);
+        console.warn('Events firestore note:', err);
       }
     );
     return () => unsub();
   }, []);
 
-  // 3. Firestore Sync for User's Registrations
+  // 3. Firestore Sync for Team Members
   useEffect(() => {
-    if (!user) {
-      setUserRegistrations([]);
-      return;
-    }
-
-    const regRef = collection(db, 'event_registrations');
-    const q = query(regRef, where('userId', '==', user.uid));
+    const teamRef = collection(db, 'team_members');
     const unsub = onSnapshot(
-      q,
+      teamRef,
       (snapshot) => {
-        const regs: EventRegistration[] = [];
-        snapshot.forEach((docSnap) => {
-          regs.push({ id: docSnap.id, ...docSnap.data() } as EventRegistration);
-        });
-        setUserRegistrations(regs);
+        if (!snapshot.empty) {
+          const loadedMembers: TeamMember[] = [];
+          snapshot.forEach((docSnap) => {
+            loadedMembers.push({ id: docSnap.id, ...docSnap.data() } as TeamMember);
+          });
+          setTeamMembers(loadedMembers);
+        }
       },
       (err) => {
-        console.warn('Registrations snapshot note:', err);
+        console.warn('Team firestore note:', err);
       }
     );
     return () => unsub();
-  }, [user]);
+  }, []);
 
-  // Handle Register / Unregister for an event
-  const handleRegisterToggle = async (eventId: string) => {
-    if (!user) {
-      // If not logged in, prompt sign in via modal/button
-      alert('Please sign in with Google to register for this event!');
-      return;
-    }
-
-    const existingReg = userRegistrations.find((r) => r.eventId === eventId);
-    if (existingReg) {
-      // Unregister
-      try {
-        await deleteDoc(doc(db, 'event_registrations', existingReg.id));
-      } catch (err) {
-        console.error('Failed to cancel registration:', err);
-      }
-    } else {
-      // Register
-      try {
-        const regDoc = doc(collection(db, 'event_registrations'));
-        await setDoc(regDoc, {
-          id: regDoc.id,
-          eventId,
-          userId: user.uid,
-          userName: user.displayName || 'Innovator',
-          userEmail: user.email || '',
-          userPhoto: user.photoURL || '',
-          registeredAt: new Date().toISOString(),
-        });
-      } catch (err) {
-        console.error('Failed to register:', err);
-      }
+  // Save Stats Handler
+  const handleSaveStats = async (newStats: SiteStats) => {
+    setStats(newStats);
+    try {
+      await setDoc(doc(db, 'site_settings', 'stats'), newStats);
+    } catch (err) {
+      console.error('Failed to save stats to Firestore:', err);
     }
   };
 
-  // Allow attaching new images to event (persists to Firestore)
-  const handleAttachImage = async (eventId: string, newImageUrl: string) => {
+  // Save Events Handler
+  const handleSaveEvents = async (newEvents: EventItem[]) => {
+    setEvents(newEvents);
+    try {
+      for (const evt of newEvents) {
+        await setDoc(doc(db, 'events', evt.id), evt);
+      }
+    } catch (err) {
+      console.error('Failed to save events to Firestore:', err);
+    }
+  };
+
+  // Save Team Members Handler
+  const handleSaveTeamMembers = async (newMembers: TeamMember[]) => {
+    setTeamMembers(newMembers);
+    try {
+      for (const member of newMembers) {
+        await setDoc(doc(db, 'team_members', member.id), member);
+      }
+    } catch (err) {
+      console.error('Failed to save team members to Firestore:', err);
+    }
+  };
+
+  // Handle Register / Unregister for an event (No login required)
+  const handleRegisterToggle = async (eventId: string) => {
+    setUserRegistrations((prev) => {
+      const isAlready = prev.includes(eventId);
+      const next = isAlready ? prev.filter((id) => id !== eventId) : [...prev, eventId];
+      try {
+        localStorage.setItem('iedc_event_rsvps', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  // Attach Image from Lightbox
+  const handleAttachImage = async (eventId: string, imageUrl: string) => {
     const targetEvent = events.find((e) => e.id === eventId);
     if (!targetEvent) return;
 
-    const updatedGallery = [...(targetEvent.galleryImages || []), newImageUrl];
+    const updatedGallery = [...(targetEvent.galleryImages || []), imageUrl];
+    const updated = events.map((e) =>
+      e.id === eventId ? { ...e, galleryImages: updatedGallery } : e
+    );
+    setEvents(updated);
+    if (selectedEvent?.id === eventId) {
+      setSelectedEvent({ ...selectedEvent, galleryImages: updatedGallery });
+    }
     try {
       await setDoc(
         doc(db, 'events', eventId),
-        {
-          ...targetEvent,
-          galleryImages: updatedGallery,
-        },
+        { ...targetEvent, galleryImages: updatedGallery },
         { merge: true }
       );
-      // Update local state in case offline
-      setEvents((prev) =>
-        prev.map((e) => (e.id === eventId ? { ...e, galleryImages: updatedGallery } : e))
-      );
-      if (selectedEvent?.id === eventId) {
-        setSelectedEvent({ ...selectedEvent, galleryImages: updatedGallery });
-      }
     } catch (err) {
       console.error('Failed to attach image:', err);
     }
@@ -219,153 +251,220 @@ export default function App() {
     setIsLightboxOpen(true);
   };
 
+  // Categorize Team Members dynamically by hierarchy
+  const nodalOfficers = teamMembers.filter((m) => m.hierarchy === 'nodal');
+  const executiveMembers = teamMembers.filter((m) => m.hierarchy === 'executive');
+  const generalMembers = teamMembers.filter((m) => m.hierarchy === 'member');
+
   return (
     <div className="relative min-h-screen bg-[#FCF8FC] text-[#1B1B1E] selection:bg-[#5231FF]/15 selection:text-[#5231FF] overflow-x-hidden">
       {/* Interactive Cursor Spotlight Glow (Desktop Only) */}
       <CursorSpotlight />
 
-      {/* Floating Liquid Glass Navigation Bar with Animated Capsule */}
+      {/* Floating Liquid Glass Navigation Bar (No Login Button, No Public CMS Button) */}
       <Navbar
-        user={user}
-        userRegistrationsCount={userRegistrations.length}
         onOpenJoinModal={() => setIsJoinModalOpen(true)}
-        onOpenUserModal={() => setIsUserModalOpen(true)}
       />
 
       <main className="w-full">
         {/* ==========================================
-            SECTION 1: HERO (Pure White #FFFFFF)
+            SECTION 1: HERO (Simple, Exciting & Clear Title)
             ========================================== */}
         <section
           id="home"
-          className="relative min-h-[92vh] sm:min-h-screen w-full bg-[#FFFFFF] flex flex-col justify-between items-center text-center px-4 sm:px-6 lg:px-12 py-16 overflow-hidden select-none"
+          className="relative min-h-[94vh] flex flex-col justify-center items-center pt-28 sm:pt-36 pb-20 px-6 lg:px-12 bg-[#FFFFFF] overflow-hidden"
         >
-          {/* Animated Ambient Hero Glow (#5231FF -> #FF4FD8) & Floating Mesh Particles */}
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center -z-0">
-            <div
-              className="animate-hero-glow w-[360px] sm:w-[640px] lg:w-[900px] h-[360px] sm:h-[640px] lg:h-[900px] rounded-full blur-3xl opacity-80"
-              style={{
-                background:
-                  'radial-gradient(circle, rgba(82, 49, 255, 0.17) 0%, rgba(255, 79, 216, 0.09) 45%, rgba(255, 255, 255, 0) 72%)',
-              }}
-            />
-            {/* Subtle floating geometric particles */}
-            <div className="particle-float-1 absolute top-[28%] left-[18%] w-3 h-3 rounded-full bg-[#5231FF]/20 blur-[1px]" />
-            <div className="particle-float-2 absolute top-[38%] right-[22%] w-4 h-4 rounded-full bg-[#FE4ED7]/25 blur-[1px]" />
-            <div className="particle-float-3 absolute bottom-[32%] left-[28%] w-2 h-2 rounded-full bg-[#5231FF]/30" />
-            <div className="particle-float-1 absolute top-[62%] right-[16%] w-2.5 h-2.5 rounded-full bg-[#5231FF]/15" />
-          </div>
+          {/* Subtle Ambient Radial Lighting */}
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[700px] h-[340px] sm:h-[480px] bg-gradient-to-tr from-[#5231FF]/8 via-[#7B5CFF]/5 to-transparent rounded-full blur-[90px] sm:blur-[130px] pointer-events-none" />
 
-          {/* Top Spacer for True Vertical Center */}
-          <div className="w-full h-8 sm:h-12" />
+          {/* Clean Grid Background Pattern (Very Subtle) */}
+          <div
+            className="absolute inset-0 opacity-[0.025] pointer-events-none bg-[radial-gradient(#111114_1px,transparent_1px)] [background-size:24px_24px]"
+            aria-hidden="true"
+          />
 
-          {/* Center Content Cluster with Staggered Entrance */}
-          <div className="relative z-10 max-w-7xl mx-auto flex flex-col items-center justify-center">
-            {/* Eyebrow */}
-            <motion.span
-              initial={{ opacity: 0, y: 24 }}
+          <div className="max-w-5xl mx-auto text-center relative z-10 flex flex-col items-center">
+            {/* 1. College & Partner Indicator */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="font-spacemono uppercase font-medium text-xs sm:text-sm tracking-[0.24em] text-[#6B6B74] mb-6 sm:mb-8 block"
+              transition={{ duration: 0.45 }}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/[0.03] border border-black/[0.06] mb-6 select-none"
             >
-              Innovation and Entrepreneurship Development Cell
-            </motion.span>
+              <span className="w-2 h-2 rounded-full bg-[#5231FF] animate-pulse" />
+              <span className="font-spacemono uppercase tracking-[0.2em] text-[11px] font-bold text-[#6B6B74]">
+                MTM COLLEGE • KERALA STARTUP MISSION ACCREDITED
+              </span>
+            </motion.div>
 
-            {/* Primary Title */}
-            <motion.h1
-              initial={{ opacity: 0, y: 32 }}
+            {/* 2. Bold, Unmistakable Title of the Website */}
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.25 }}
-              className="font-clash font-bold text-[#111114] tracking-[-0.025em] leading-[0.92] text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-center select-none transition-transform hover:scale-[1.01] duration-500"
+              transition={{ duration: 0.55, delay: 0.08 }}
+              className="mb-4"
             >
-              IEDC MTM COLLEGE
-            </motion.h1>
+              <h1 className="font-clash font-extrabold text-5xl sm:text-7xl md:text-8xl lg:text-[102px] text-[#111114] tracking-tight leading-[0.98]">
+                IEDC{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5231FF] via-[#6847FF] to-[#3a00df]">
+                  MTM
+                </span>
+              </h1>
+              <p className="font-spacemono uppercase tracking-[0.16em] text-xs sm:text-sm md:text-base font-bold text-[#5231FF] mt-3">
+                Innovation &amp; Entrepreneurship Development Centre
+              </p>
+            </motion.div>
 
-            {/* Subtitle */}
+            {/* 3. Simple, Exciting Description (No Clutter) */}
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.45 }}
-              className="font-general font-medium text-lg sm:text-xl md:text-2xl text-[#6B6B74] mt-6 sm:mt-8 tracking-[-0.01em]"
+              transition={{ duration: 0.55, delay: 0.16 }}
+              className="font-general text-base sm:text-xl text-[#6B6B74] max-w-2xl mx-auto leading-relaxed mb-8"
             >
-              MTM College · Ponnani, Kerala
+              Where students turn ideas into funded ventures, build working prototypes, and connect
+              with Kerala&apos;s leading mentors and hackathons.
             </motion.p>
-          </div>
 
-          {/* Floating Chevron pointing downward */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.65 }}
-            className="relative z-10 w-full flex justify-center pb-2"
-          >
-            <a
-              href="#about"
-              aria-label="Scroll to about section"
-              className="animate-float-chevron group w-11 h-11 rounded-full flex items-center justify-center text-[#6B6B74]/80 hover:text-[#5231FF] hover:bg-[#5231FF]/10 hover:shadow-[0_0_16px_rgba(82,49,255,0.2)] transition-all cursor-pointer"
+            {/* 4. Action Buttons (Clean & Direct) */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.24 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto mb-12 select-none"
             >
-              <ChevronDown className="w-6 h-6 group-hover:scale-110 transition-transform" />
-            </a>
-          </motion.div>
+              <a
+                href="#events"
+                className="w-full sm:w-auto bg-[#5231FF] text-white font-semibold text-sm sm:text-base px-8 py-3.5 rounded-full shadow-[0_6px_24px_rgba(82,49,255,0.32)] hover:shadow-[0_10px_32px_rgba(82,49,255,0.48)] hover:brightness-110 hover:scale-105 active:scale-95 transition-all duration-300 inline-flex items-center justify-center gap-2 group cursor-pointer"
+              >
+                <span>Explore Events &amp; Sprints</span>
+                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setIsJoinModalOpen(true)}
+                className="w-full sm:w-auto bg-black/[0.03] hover:bg-black/[0.06] text-[#111114] font-semibold text-sm sm:text-base px-8 py-3.5 rounded-full border border-black/[0.08] hover:border-black/20 hover:scale-105 active:scale-95 transition-all duration-300 inline-flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+              >
+                <Rocket className="w-4 h-4 text-[#5231FF]" />
+                <span>Submit Startup Idea</span>
+              </button>
+            </motion.div>
+
+            {/* 5. Minimalist Live Status Highlights (Uncluttered, High Signal) */}
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.32 }}
+              className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-3 text-left pt-6 border-t border-black/5"
+            >
+              <a
+                href="#events"
+                className="p-3.5 rounded-2xl bg-[#F6F6F8]/80 hover:bg-[#F6F6F8] border border-black/5 hover:border-[#5231FF]/20 transition-all duration-300 group flex items-center justify-between"
+              >
+                <div>
+                  <span className="font-spacemono text-[10px] uppercase font-bold text-[#5231FF] block">
+                    UPCOMING EVENTS
+                  </span>
+                  <span className="font-clash font-bold text-sm text-[#111114]">
+                    Hackathons &amp; Sprints
+                  </span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-[#6B6B74] group-hover:text-[#5231FF] group-hover:translate-x-1 transition-all" />
+              </a>
+
+              <a
+                href="#about"
+                className="p-3.5 rounded-2xl bg-[#F6F6F8]/80 hover:bg-[#F6F6F8] border border-black/5 hover:border-[#5231FF]/20 transition-all duration-300 group flex items-center justify-between"
+              >
+                <div>
+                  <span className="font-spacemono text-[10px] uppercase font-bold text-[#5231FF] block">
+                    CAMPUS INCUBATION
+                  </span>
+                  <span className="font-clash font-bold text-sm text-[#111114]">
+                    Seed Grants &amp; Lab
+                  </span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-[#6B6B74] group-hover:text-[#5231FF] group-hover:translate-x-1 transition-all" />
+              </a>
+
+              <a
+                href="#team"
+                className="p-3.5 rounded-2xl bg-[#F6F6F8]/80 hover:bg-[#F6F6F8] border border-black/5 hover:border-[#5231FF]/20 transition-all duration-300 group flex items-center justify-between"
+              >
+                <div>
+                  <span className="font-spacemono text-[10px] uppercase font-bold text-[#5231FF] block">
+                    MEET THE TEAM
+                  </span>
+                  <span className="font-clash font-bold text-sm text-[#111114]">
+                    Council &amp; Leads
+                  </span>
+                </div>
+                <ArrowRight className="w-3.5 h-3.5 text-[#6B6B74] group-hover:text-[#5231FF] group-hover:translate-x-1 transition-all" />
+              </a>
+            </motion.div>
+          </div>
         </section>
 
         {/* ==========================================
-            SECTION 2: ABOUT & ACHIEVEMENTS (#F6F6F8)
+            SECTION 2: ABOUT & STATS (#F6F6F8)
             ========================================== */}
         <section id="about" className="w-full bg-[#F6F6F8] py-28 md:py-36 px-6 lg:px-12 relative">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-              {/* Left Column: Story */}
-              <div className="lg:col-span-6 flex flex-col justify-center">
-                <div className="inline-flex items-center gap-2 mb-4">
-                  <span className="w-2 h-2 rounded-full bg-[#5231FF] animate-ping" />
-                  <span className="font-spacemono uppercase tracking-[0.18em] text-xs font-bold text-[#6B6B74]">
-                    ABOUT US
-                  </span>
-                </div>
-
-                <h2 className="font-clash font-bold text-3xl sm:text-4xl md:text-5xl text-[#111114] tracking-tight mb-6 leading-tight">
-                  Who We Are
-                </h2>
-
-                <p className="font-general text-base md:text-lg text-[#6B6B74] leading-relaxed mb-6">
-                  IEDC MTM College serves as the crucible for student-led innovation, turning
-                  ambitious ideas into resilient technical ventures. Rooted in MTM College, Ponnani,
-                  we empower young founders through structured mentorship, industry immersion, and
-                  pre-incubation grants.
-                </p>
-
-                <p className="font-general text-base md:text-lg text-[#6B6B74] leading-relaxed mb-8">
-                  Our ecosystem bridges grassroots collegiate creativity with Kerala’s thriving
-                  technological renaissance, producing leaders primed to solve regional and global
-                  challenges with technical discipline.
-                </p>
-
-                {/* Core Pillar Indicators */}
-                <div className="grid grid-cols-2 gap-4 pt-2">
-                  <div className="flex items-center gap-3 group p-2.5 rounded-xl transition-all duration-300 hover:bg-white/80 hover:shadow-sm">
-                    <span className="w-8 h-8 rounded-full bg-[#5231FF]/10 text-[#5231FF] flex items-center justify-center group-hover:bg-[#5231FF] group-hover:text-white group-hover:scale-110 shadow-xs transition-all duration-300">
-                      <span className="material-symbols-outlined text-[18px]">rocket_launch</span>
-                    </span>
-                    <span className="font-general font-medium text-sm text-[#111114] group-hover:text-[#5231FF] transition-colors">
-                      Student Incubation
+              {/* Left Column: Narrative */}
+              <div className="lg:col-span-6 flex flex-col justify-between">
+                <div>
+                  <div className="inline-flex items-center gap-2 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-[#5231FF]" />
+                    <span className="font-spacemono uppercase tracking-[0.2em] text-xs font-bold text-[#6B6B74]">
+                      MISSION &amp; VISION
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-3 group p-2.5 rounded-xl transition-all duration-300 hover:bg-white/80 hover:shadow-sm">
-                    <span className="w-8 h-8 rounded-full bg-[#5231FF]/10 text-[#5231FF] flex items-center justify-center group-hover:bg-[#5231FF] group-hover:text-white group-hover:scale-110 shadow-xs transition-all duration-300">
-                      <span className="material-symbols-outlined text-[18px]">hub</span>
+                  <h2 className="font-clash font-bold text-3xl sm:text-4xl md:text-5xl text-[#111114] tracking-tight leading-snug mb-6">
+                    Fostering tomorrow’s founders right inside collegiate labs.
+                  </h2>
+
+                  <p className="font-general text-base md:text-lg text-[#6B6B74] leading-relaxed mb-6">
+                    The Innovation and Entrepreneurship Development Cell (IEDC) at MTM College serves
+                    as the prime institutional vehicle providing infrastructure, industry
+                    mentorship, prototyping kits, and intellectual property backing to transform
+                    student concepts into commercial ventures.
+                  </p>
+
+                  <p className="font-general text-sm md:text-base text-[#6B6B74] leading-relaxed mb-8">
+                    Partnered with Kerala Startup Mission (KSUM), we operate dedicated hackspaces,
+                    host continuous sprint weekends, and connect collegiate teams directly to angel
+                    funds and patent filing resources.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-[rgba(0,0,0,0.06)]">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#5231FF]" />
+                    <span className="text-xs font-spacemono font-bold uppercase text-[#111114]">
+                      KSUM Accredited
                     </span>
-                    <span className="font-general font-medium text-sm text-[#111114] group-hover:text-[#5231FF] transition-colors">
-                      Kerala Startup Ecosystem
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#5231FF]" />
+                    <span className="text-xs font-spacemono font-bold uppercase text-[#111114]">
+                      Seed Grant Backing
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#5231FF]" />
+                    <span className="text-xs font-spacemono font-bold uppercase text-[#111114]">
+                      24/7 Lab Access
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: 2x2 Liquid Glass Stats Grid */}
+              {/* Right Column: Dynamic Counter Grid */}
               <div className="lg:col-span-6">
-                <StatsCounterGrid />
+                <StatsCounterGrid stats={stats} />
               </div>
             </div>
           </div>
@@ -382,7 +481,7 @@ export default function App() {
                 <div className="inline-flex items-center gap-2 mb-3">
                   <span className="w-2 h-2 rounded-full bg-[#5231FF]" />
                   <span className="font-spacemono uppercase tracking-[0.2em] text-xs font-bold text-[#6B6B74]">
-                    WHAT'S NEXT
+                    WHAT&apos;S NEXT
                   </span>
                 </div>
                 <h2 className="font-clash font-bold text-3xl sm:text-4xl md:text-5xl text-[#111114] tracking-tight">
@@ -404,7 +503,7 @@ export default function App() {
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
             >
               {events.map((evt) => {
-                const isRegistered = userRegistrations.some((r) => r.eventId === evt.id);
+                const isRegistered = userRegistrations.includes(evt.id);
                 const attachedCount = (evt.galleryImages?.length || 0) + 1;
 
                 return (
@@ -416,7 +515,7 @@ export default function App() {
                     className="glass-liquid-card group rounded-[24px] overflow-hidden flex flex-col justify-between cursor-pointer"
                   >
                     <div>
-                      {/* 16:9 Cover Image Header (As requested: visitors only see the cover image initially) */}
+                      {/* 16:9 Cover Image Header */}
                       <div className="relative w-full aspect-video bg-[#F6F6F8] overflow-hidden">
                         {/* Cover Image */}
                         <img
@@ -515,195 +614,144 @@ export default function App() {
             </div>
 
             <div className="space-y-12 sm:space-y-16">
-              {/* TIER 1: NODAL OFFICERS & FACULTY ADVISORY (2 to 3 per line) */}
+              {/* TIER 1: NODAL OFFICERS & FACULTY ADVISORY */}
               <div>
-                <div className="flex items-center gap-2.5 mb-5 sm:mb-6">
+                <div className="flex items-center gap-2 mb-4 sm:mb-5">
                   <span className="w-2 h-2 rounded-full bg-[#5231FF]" />
                   <h3 className="font-spacemono text-xs sm:text-sm uppercase font-bold tracking-wider text-[#111114]">
                     Faculty Leadership &amp; Nodal Officers
                   </h3>
-                  <span className="text-xs font-spacemono text-[#6B6B74]">
-                    // 2-3 per line
-                  </span>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-6">
-                  {NODAL_OFFICERS.map((member, idx) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {nodalOfficers.map((member) => (
                     <div
-                      key={idx}
-                      className="glass-liquid-card group rounded-[22px] sm:rounded-[24px] p-4 sm:p-6 flex flex-col justify-between transition-all duration-300 cursor-default hover:-translate-y-1"
+                      key={member.id}
+                      onClick={() => {
+                        setSelectedMember(member);
+                        setIsMemberModalOpen(true);
+                      }}
+                      className="glass-liquid-card group rounded-2xl sm:rounded-[24px] p-4 sm:p-5 flex flex-col justify-between transition-all duration-300 cursor-pointer hover:-translate-y-1.5 hover:shadow-lg border border-black/5"
                     >
-                      <div>
-                        {/* Avatar */}
-                        <div className="w-full aspect-[4/3] sm:aspect-square rounded-[18px] bg-[#FFFFFF] flex flex-col items-center justify-center relative overflow-hidden mb-4 shadow-sm border border-black/5 group-hover:border-[#5231FF]/25 group-hover:shadow-[0_12px_28px_rgba(82,49,255,0.14)] transition-all duration-300">
-                          <span className="font-clash font-bold text-2xl sm:text-4xl text-[#111114]/80 group-hover:scale-105 group-hover:text-[#5231FF] transition-all duration-300">
+                      {/* Image */}
+                      <div className="w-full aspect-[4/3] sm:aspect-square rounded-xl sm:rounded-2xl bg-[#F6F6F8] flex items-center justify-center overflow-hidden mb-3.5 border border-black/5">
+                        {member.photoUrl ? (
+                          <img
+                            src={member.photoUrl}
+                            alt={member.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <span className="font-clash font-bold text-2xl sm:text-3xl text-[#5231FF] group-hover:scale-110 transition-transform">
                             {member.initials}
                           </span>
-                          <span className="absolute bottom-2.5 right-2.5 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#F6F6F8] text-[#5231FF] flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
-                            <span className="material-symbols-outlined text-[15px] sm:text-[16px]">
-                              {member.badgeIcon}
-                            </span>
-                          </span>
-                        </div>
+                        )}
+                      </div>
 
+                      {/* Name & Role Only */}
+                      <div className="text-center">
                         <h4 className="font-clash font-bold text-sm sm:text-lg text-[#111114] leading-snug group-hover:text-[#5231FF] transition-colors truncate">
                           {member.name}
                         </h4>
-                        <p className="font-general text-xs sm:text-sm text-[#6B6B74] font-medium mt-0.5 line-clamp-1">
+                        <p className="font-general text-xs sm:text-sm text-[#6B6B74] font-medium mt-1 truncate">
                           {member.role}
                         </p>
-                      </div>
-
-                      {/* Socials */}
-                      <div className="flex items-center gap-2 pt-4 mt-3 border-t border-black/5">
-                        <a
-                          href={member.linkedin}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`${member.name} LinkedIn`}
-                          className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-white hover:bg-[#5231FF] hover:scale-105 shadow-xs transition-all duration-200"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">work</span>
-                        </a>
-                        <a
-                          href={member.instagram}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`${member.name} Instagram`}
-                          className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-white hover:bg-[#5231FF] hover:scale-105 shadow-xs transition-all duration-200"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">photo_camera</span>
-                        </a>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* TIER 2: TEAM EXECUTIVES (4 members in one line) */}
+              {/* TIER 2: TEAM EXECUTIVES */}
               <div>
-                <div className="flex items-center gap-2.5 mb-5 sm:mb-6">
+                <div className="flex items-center gap-2 mb-4 sm:mb-5">
                   <span className="w-2 h-2 rounded-full bg-[#5231FF]" />
                   <h3 className="font-spacemono text-xs sm:text-sm uppercase font-bold tracking-wider text-[#111114]">
                     Executive Council
                   </h3>
-                  <span className="text-xs font-spacemono text-[#6B6B74]">
-                    // 4 members in one line
-                  </span>
                 </div>
 
-                <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-5">
-                  {EXECUTIVE_MEMBERS.map((member, idx) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
+                  {executiveMembers.map((member) => (
                     <div
-                      key={idx}
-                      className="glass-liquid-card group rounded-[18px] sm:rounded-[22px] p-2.5 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-300 cursor-default hover:-translate-y-1"
+                      key={member.id}
+                      onClick={() => {
+                        setSelectedMember(member);
+                        setIsMemberModalOpen(true);
+                      }}
+                      className="glass-liquid-card group rounded-2xl sm:rounded-[22px] p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-300 cursor-pointer hover:-translate-y-1.5 hover:shadow-lg border border-black/5"
                     >
-                      <div className="w-full flex flex-col items-center">
-                        {/* Avatar */}
-                        <div className="w-11 h-11 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-white flex items-center justify-center relative shadow-xs border border-black/5 mb-2 sm:mb-4 group-hover:scale-105 group-hover:border-[#5231FF]/30 transition-all duration-300">
-                          <span className="font-clash font-bold text-sm sm:text-2xl text-[#5231FF]">
+                      {/* Image */}
+                      <div className="w-full aspect-square rounded-xl sm:rounded-2xl bg-[#F6F6F8] flex items-center justify-center overflow-hidden mb-3 border border-black/5">
+                        {member.photoUrl ? (
+                          <img
+                            src={member.photoUrl}
+                            alt={member.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <span className="font-clash font-bold text-xl sm:text-2xl text-[#5231FF] group-hover:scale-110 transition-transform">
                             {member.initials}
                           </span>
-                          <span className="absolute -bottom-1 -right-1 w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-[#5231FF] text-white flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110">
-                            <span className="material-symbols-outlined text-[10px] sm:text-[14px]">
-                              {member.badgeIcon}
-                            </span>
-                          </span>
-                        </div>
-
-                        <h4 className="font-clash font-bold text-[11px] sm:text-base text-[#111114] leading-tight truncate w-full group-hover:text-[#5231FF] transition-colors">
-                          {member.name}
-                        </h4>
-                        <p className="font-general text-[9px] sm:text-xs text-[#5231FF] font-semibold leading-tight line-clamp-2 mt-0.5 sm:mt-1">
-                          {member.role}
-                        </p>
+                        )}
                       </div>
 
-                      {/* Compact Socials */}
-                      <div className="flex items-center gap-1.5 sm:gap-2 pt-2.5 sm:pt-4 mt-2 sm:mt-3 border-t border-black/5 w-full justify-center">
-                        <a
-                          href={member.linkedin}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`${member.name} LinkedIn`}
-                          className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-white hover:bg-[#5231FF] hover:scale-105 shadow-xs transition-all duration-200"
-                        >
-                          <span className="material-symbols-outlined text-[12px] sm:text-[16px]">work</span>
-                        </a>
-                        <a
-                          href={member.instagram}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`${member.name} Instagram`}
-                          className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-white hover:bg-[#5231FF] hover:scale-105 shadow-xs transition-all duration-200"
-                        >
-                          <span className="material-symbols-outlined text-[12px] sm:text-[16px]">photo_camera</span>
-                        </a>
+                      {/* Name & Role Only */}
+                      <div className="text-center">
+                        <h4 className="font-clash font-bold text-xs sm:text-base text-[#111114] leading-tight truncate group-hover:text-[#5231FF] transition-colors">
+                          {member.name}
+                        </h4>
+                        <p className="font-general text-[11px] sm:text-xs text-[#5231FF] font-semibold mt-1 truncate">
+                          {member.role}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* TIER 3: NORMAL MEMBERS / DOMAIN LEADS (5 members in one line) */}
+              {/* TIER 3: NORMAL MEMBERS / DOMAIN LEADS */}
               <div>
-                <div className="flex items-center gap-2.5 mb-5 sm:mb-6">
+                <div className="flex items-center gap-2 mb-4 sm:mb-5">
                   <span className="w-2 h-2 rounded-full bg-[#5231FF]" />
                   <h3 className="font-spacemono text-xs sm:text-sm uppercase font-bold tracking-wider text-[#111114]">
                     Domain Leads &amp; Innovators
                   </h3>
-                  <span className="text-xs font-spacemono text-[#6B6B74]">
-                    // 5 members in one line
-                  </span>
                 </div>
 
-                <div className="grid grid-cols-5 gap-1.5 sm:gap-3 md:gap-4">
-                  {GENERAL_MEMBERS.map((member, idx) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                  {generalMembers.map((member) => (
                     <div
-                      key={idx}
-                      className="glass-liquid-card group rounded-[14px] sm:rounded-[18px] p-1.5 sm:p-4 flex flex-col items-center justify-between text-center transition-all duration-300 cursor-default hover:-translate-y-1"
+                      key={member.id}
+                      onClick={() => {
+                        setSelectedMember(member);
+                        setIsMemberModalOpen(true);
+                      }}
+                      className="glass-liquid-card group rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between transition-all duration-300 cursor-pointer hover:-translate-y-1.5 hover:shadow-lg border border-black/5"
                     >
-                      <div className="w-full flex flex-col items-center">
-                        {/* Avatar */}
-                        <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-white flex items-center justify-center relative shadow-xs border border-black/5 mb-1.5 sm:mb-3 group-hover:scale-105 transition-all duration-300">
-                          <span className="font-clash font-bold text-xs sm:text-lg text-[#111114]/80 group-hover:text-[#5231FF]">
+                      {/* Image */}
+                      <div className="w-full aspect-square rounded-xl bg-[#F6F6F8] flex items-center justify-center overflow-hidden mb-2.5 border border-black/5">
+                        {member.photoUrl ? (
+                          <img
+                            src={member.photoUrl}
+                            alt={member.name}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <span className="font-clash font-bold text-base sm:text-lg text-[#5231FF] group-hover:scale-110 transition-transform">
                             {member.initials}
                           </span>
-                          <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full bg-[#F6F6F8] text-[#5231FF] flex items-center justify-center shadow-xs">
-                            <span className="material-symbols-outlined text-[9px] sm:text-[12px]">
-                              {member.badgeIcon}
-                            </span>
-                          </span>
-                        </div>
-
-                        <h4 className="font-clash font-bold text-[10px] sm:text-sm text-[#111114] leading-tight truncate w-full group-hover:text-[#5231FF] transition-colors">
-                          {member.name}
-                        </h4>
-                        <p className="font-general text-[8px] sm:text-[11px] text-[#6B6B74] font-medium leading-tight truncate w-full mt-0.5 sm:mt-1">
-                          {member.role}
-                        </p>
+                        )}
                       </div>
 
-                      {/* Micro Socials */}
-                      <div className="flex items-center gap-1 sm:gap-1.5 pt-1.5 sm:pt-3 mt-1 sm:mt-2 border-t border-black/5 w-full justify-center">
-                        <a
-                          href={member.linkedin}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`${member.name} LinkedIn`}
-                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-[#5231FF] transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[10px] sm:text-[13px]">work</span>
-                        </a>
-                        <a
-                          href={member.instagram}
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={`${member.name} Instagram`}
-                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-[#5231FF] transition-colors"
-                        >
-                          <span className="material-symbols-outlined text-[10px] sm:text-[13px]">photo_camera</span>
-                        </a>
+                      {/* Name & Role Only */}
+                      <div className="text-center">
+                        <h4 className="font-clash font-bold text-xs sm:text-sm text-[#111114] leading-tight truncate group-hover:text-[#5231FF] transition-colors">
+                          {member.name}
+                        </h4>
+                        <p className="font-general text-[10px] sm:text-[11px] text-[#6B6B74] font-medium mt-0.5 truncate">
+                          {member.role}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -817,10 +865,19 @@ export default function App() {
             </div>
           </div>
 
+          {/* Requested Footer String Change with Discreet Admin Trigger */}
           <div className="border-t border-black/5 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 font-spacemono text-xs text-[#6B6B74]">
             <span>© 2026 IEDC MTM College. All rights reserved.</span>
-            <span className="inline-flex items-center gap-1.5">
-              Made with <span className="text-rose-500 animate-heartbeat text-base">❤️</span> by IEDC MTM
+            <span
+              onClick={(e) => {
+                if (e.detail === 3) {
+                  setIsCmsModalOpen(true);
+                }
+              }}
+              title=""
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#111114] select-none cursor-default"
+            >
+              Made by IEDC MTM &lt;3
             </span>
           </div>
         </div>
@@ -837,11 +894,8 @@ export default function App() {
           setIsLightboxOpen(false);
           setSelectedEvent(null);
         }}
-        isRegistered={
-          selectedEvent ? userRegistrations.some((r) => r.eventId === selectedEvent.id) : false
-        }
+        isRegistered={selectedEvent ? userRegistrations.includes(selectedEvent.id) : false}
         onRegisterToggle={handleRegisterToggle}
-        user={user}
         onAttachImage={handleAttachImage}
       />
 
@@ -849,19 +903,27 @@ export default function App() {
       <JoinUsModal
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
-        user={user}
       />
 
-      {/* 3. User Registered Events Tickets Modal */}
-      <UserRegistrationsModal
-        isOpen={isUserModalOpen}
-        onClose={() => setIsUserModalOpen(false)}
-        user={user}
-        registrations={userRegistrations}
+      {/* 3. Comprehensive CMS Dashboard (Bulk Uploads, Stats Edit, Events, Sanity Sync) */}
+      <CmsDashboardModal
+        isOpen={isCmsModalOpen}
+        onClose={() => setIsCmsModalOpen(false)}
+        stats={stats}
+        onSaveStats={handleSaveStats}
         events={events}
-        onSelectEvent={(evt) => {
-          setSelectedEvent(evt);
-          setIsLightboxOpen(true);
+        onSaveEvents={handleSaveEvents}
+        teamMembers={teamMembers}
+        onSaveTeamMembers={handleSaveTeamMembers}
+      />
+
+      {/* 4. Member Profile Details Modal (Instagram, LinkedIn, Contact) */}
+      <MemberProfileModal
+        member={selectedMember}
+        isOpen={isMemberModalOpen}
+        onClose={() => {
+          setIsMemberModalOpen(false);
+          setSelectedMember(null);
         }}
       />
     </div>

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { User } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import confetti from 'canvas-confetti';
@@ -9,13 +8,12 @@ import { X, Sparkles, Send, CheckCircle2, Rocket, Lightbulb, ShieldCheck } from 
 interface JoinUsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: User | null;
 }
 
-export const JoinUsModal: React.FC<JoinUsModalProps> = ({ isOpen, onClose, user }) => {
+export const JoinUsModal: React.FC<JoinUsModalProps> = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
-    name: user?.displayName || '',
-    email: user?.email || '',
+    name: '',
+    email: '',
     phone: '',
     startupName: '',
     department: 'Computer Science & Engineering',
@@ -36,7 +34,6 @@ export const JoinUsModal: React.FC<JoinUsModalProps> = ({ isOpen, onClose, user 
     try {
       await addDoc(collection(db, 'applications'), {
         ...formData,
-        userId: user?.uid || null,
         submittedAt: serverTimestamp(),
       });
 
