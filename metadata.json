@@ -1,0 +1,8 @@
+{
+  "name": "IEDC MTM College",
+  "description": "Innovation and Entrepreneurship Development Cell at MTM College, Ponnani, Kerala. Empowering student founders through structured mentorship, industry immersion, and pre-incubation grants.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
