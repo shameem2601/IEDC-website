@@ -19,7 +19,13 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import { auth, onAuthStateChanged, db } from './lib/firebase';
-import { INITIAL_EVENTS, TEAM_MEMBERS } from './data/initialEvents';
+import {
+  INITIAL_EVENTS,
+  NODAL_OFFICERS,
+  EXECUTIVE_MEMBERS,
+  GENERAL_MEMBERS,
+  TEAM_MEMBERS,
+} from './data/initialEvents';
 import { EventItem, EventRegistration } from './types';
 import { Navbar } from './components/Navbar';
 import { CursorSpotlight } from './components/CursorSpotlight';
@@ -492,7 +498,7 @@ export default function App() {
         <section id="team" className="w-full bg-[#F6F6F8] py-28 md:py-36 px-6 lg:px-12 relative">
           <div className="max-w-7xl mx-auto">
             {/* Section Header */}
-            <div className="max-w-2xl mb-16">
+            <div className="max-w-2xl mb-12 sm:mb-16">
               <div className="inline-flex items-center gap-2 mb-3">
                 <span className="w-2 h-2 rounded-full bg-[#5231FF]" />
                 <span className="font-spacemono uppercase tracking-[0.2em] text-xs font-bold text-[#6B6B74]">
@@ -503,75 +509,206 @@ export default function App() {
                 Meet the Team
               </h2>
               <p className="font-general text-base md:text-lg text-[#6B6B74] leading-relaxed">
-                The dedicated student leads, faculty curators, and mentors driving innovation across
-                campus.
+                The structured leadership hierarchy powering innovation, venture incubation, and
+                student technology cohorts across MTM College.
               </p>
             </div>
 
-            {/* 4-Column Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {TEAM_MEMBERS.map((member, idx) => (
-                <div
-                  key={idx}
-                  className="glass-liquid-card group rounded-[24px] p-6 flex flex-col justify-between transition-all duration-300 cursor-default"
-                >
-                  <div>
-                    {/* Avatar Area with dynamic shine and scale */}
-                    <div className="w-full aspect-square rounded-[20px] bg-[#FFFFFF] flex flex-col items-center justify-center relative overflow-hidden mb-6 shadow-sm border border-transparent group-hover:border-[#5231FF]/25 group-hover:shadow-[0_12px_28px_rgba(82,49,255,0.14)] transition-all duration-300">
-                      <span
-                        className={`font-clash font-bold text-3xl sm:text-4xl transition-all duration-300 group-hover:scale-110 ${
-                          member.initials === 'FR'
-                            ? 'text-[#5231FF] group-hover:text-[#3a00df]'
-                            : 'text-[#111114]/80 group-hover:text-[#5231FF]'
-                        }`}
-                      >
-                        {member.initials}
-                      </span>
-
-                      <span
-                        className={`absolute bottom-3 right-3 w-7 h-7 rounded-full flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12 ${
-                          member.initials === 'FR'
-                            ? 'bg-[#5231FF] text-white'
-                            : 'bg-[#F6F6F8] text-[#5231FF]'
-                        }`}
-                      >
-                        <span className="material-symbols-outlined text-[16px]">
-                          {member.badgeIcon}
-                        </span>
-                      </span>
-                    </div>
-
-                    <h3 className="font-clash font-bold text-lg text-[#111114] leading-snug group-hover:text-[#5231FF] transition-colors">
-                      {member.name}
-                    </h3>
-                    <p className="font-general text-sm text-[#6B6B74] font-medium mt-1">
-                      {member.role}
-                    </p>
-                  </div>
-
-                  {/* Social Buttons */}
-                  <div className="flex items-center gap-2 pt-6 mt-4 border-t border-[rgba(0,0,0,0.04)]">
-                    <a
-                      href={member.linkedin}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`${member.name} LinkedIn`}
-                      className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-white hover:bg-[#5231FF] hover:rotate-6 hover:scale-110 shadow-sm transition-all duration-200"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">work</span>
-                    </a>
-                    <a
-                      href={member.instagram}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={`${member.name} Instagram`}
-                      className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-white hover:bg-[#5231FF] hover:-rotate-6 hover:scale-110 shadow-sm transition-all duration-200"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">photo_camera</span>
-                    </a>
-                  </div>
+            <div className="space-y-12 sm:space-y-16">
+              {/* TIER 1: NODAL OFFICERS & FACULTY ADVISORY (2 to 3 per line) */}
+              <div>
+                <div className="flex items-center gap-2.5 mb-5 sm:mb-6">
+                  <span className="w-2 h-2 rounded-full bg-[#5231FF]" />
+                  <h3 className="font-spacemono text-xs sm:text-sm uppercase font-bold tracking-wider text-[#111114]">
+                    Faculty Leadership &amp; Nodal Officers
+                  </h3>
+                  <span className="text-xs font-spacemono text-[#6B6B74]">
+                    // 2-3 per line
+                  </span>
                 </div>
-              ))}
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-6">
+                  {NODAL_OFFICERS.map((member, idx) => (
+                    <div
+                      key={idx}
+                      className="glass-liquid-card group rounded-[22px] sm:rounded-[24px] p-4 sm:p-6 flex flex-col justify-between transition-all duration-300 cursor-default hover:-translate-y-1"
+                    >
+                      <div>
+                        {/* Avatar */}
+                        <div className="w-full aspect-[4/3] sm:aspect-square rounded-[18px] bg-[#FFFFFF] flex flex-col items-center justify-center relative overflow-hidden mb-4 shadow-sm border border-black/5 group-hover:border-[#5231FF]/25 group-hover:shadow-[0_12px_28px_rgba(82,49,255,0.14)] transition-all duration-300">
+                          <span className="font-clash font-bold text-2xl sm:text-4xl text-[#111114]/80 group-hover:scale-105 group-hover:text-[#5231FF] transition-all duration-300">
+                            {member.initials}
+                          </span>
+                          <span className="absolute bottom-2.5 right-2.5 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-[#F6F6F8] text-[#5231FF] flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+                            <span className="material-symbols-outlined text-[15px] sm:text-[16px]">
+                              {member.badgeIcon}
+                            </span>
+                          </span>
+                        </div>
+
+                        <h4 className="font-clash font-bold text-sm sm:text-lg text-[#111114] leading-snug group-hover:text-[#5231FF] transition-colors truncate">
+                          {member.name}
+                        </h4>
+                        <p className="font-general text-xs sm:text-sm text-[#6B6B74] font-medium mt-0.5 line-clamp-1">
+                          {member.role}
+                        </p>
+                      </div>
+
+                      {/* Socials */}
+                      <div className="flex items-center gap-2 pt-4 mt-3 border-t border-black/5">
+                        <a
+                          href={member.linkedin}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`${member.name} LinkedIn`}
+                          className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-white hover:bg-[#5231FF] hover:scale-105 shadow-xs transition-all duration-200"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">work</span>
+                        </a>
+                        <a
+                          href={member.instagram}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`${member.name} Instagram`}
+                          className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-white hover:bg-[#5231FF] hover:scale-105 shadow-xs transition-all duration-200"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">photo_camera</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* TIER 2: TEAM EXECUTIVES (4 members in one line) */}
+              <div>
+                <div className="flex items-center gap-2.5 mb-5 sm:mb-6">
+                  <span className="w-2 h-2 rounded-full bg-[#5231FF]" />
+                  <h3 className="font-spacemono text-xs sm:text-sm uppercase font-bold tracking-wider text-[#111114]">
+                    Executive Council
+                  </h3>
+                  <span className="text-xs font-spacemono text-[#6B6B74]">
+                    // 4 members in one line
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-4 gap-2 sm:gap-4 md:gap-5">
+                  {EXECUTIVE_MEMBERS.map((member, idx) => (
+                    <div
+                      key={idx}
+                      className="glass-liquid-card group rounded-[18px] sm:rounded-[22px] p-2.5 sm:p-5 flex flex-col items-center justify-between text-center transition-all duration-300 cursor-default hover:-translate-y-1"
+                    >
+                      <div className="w-full flex flex-col items-center">
+                        {/* Avatar */}
+                        <div className="w-11 h-11 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-white flex items-center justify-center relative shadow-xs border border-black/5 mb-2 sm:mb-4 group-hover:scale-105 group-hover:border-[#5231FF]/30 transition-all duration-300">
+                          <span className="font-clash font-bold text-sm sm:text-2xl text-[#5231FF]">
+                            {member.initials}
+                          </span>
+                          <span className="absolute -bottom-1 -right-1 w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-[#5231FF] text-white flex items-center justify-center shadow-xs transition-transform duration-300 group-hover:scale-110">
+                            <span className="material-symbols-outlined text-[10px] sm:text-[14px]">
+                              {member.badgeIcon}
+                            </span>
+                          </span>
+                        </div>
+
+                        <h4 className="font-clash font-bold text-[11px] sm:text-base text-[#111114] leading-tight truncate w-full group-hover:text-[#5231FF] transition-colors">
+                          {member.name}
+                        </h4>
+                        <p className="font-general text-[9px] sm:text-xs text-[#5231FF] font-semibold leading-tight line-clamp-2 mt-0.5 sm:mt-1">
+                          {member.role}
+                        </p>
+                      </div>
+
+                      {/* Compact Socials */}
+                      <div className="flex items-center gap-1.5 sm:gap-2 pt-2.5 sm:pt-4 mt-2 sm:mt-3 border-t border-black/5 w-full justify-center">
+                        <a
+                          href={member.linkedin}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`${member.name} LinkedIn`}
+                          className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-white hover:bg-[#5231FF] hover:scale-105 shadow-xs transition-all duration-200"
+                        >
+                          <span className="material-symbols-outlined text-[12px] sm:text-[16px]">work</span>
+                        </a>
+                        <a
+                          href={member.instagram}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`${member.name} Instagram`}
+                          className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-white hover:bg-[#5231FF] hover:scale-105 shadow-xs transition-all duration-200"
+                        >
+                          <span className="material-symbols-outlined text-[12px] sm:text-[16px]">photo_camera</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* TIER 3: NORMAL MEMBERS / DOMAIN LEADS (5 members in one line) */}
+              <div>
+                <div className="flex items-center gap-2.5 mb-5 sm:mb-6">
+                  <span className="w-2 h-2 rounded-full bg-[#5231FF]" />
+                  <h3 className="font-spacemono text-xs sm:text-sm uppercase font-bold tracking-wider text-[#111114]">
+                    Domain Leads &amp; Innovators
+                  </h3>
+                  <span className="text-xs font-spacemono text-[#6B6B74]">
+                    // 5 members in one line
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-5 gap-1.5 sm:gap-3 md:gap-4">
+                  {GENERAL_MEMBERS.map((member, idx) => (
+                    <div
+                      key={idx}
+                      className="glass-liquid-card group rounded-[14px] sm:rounded-[18px] p-1.5 sm:p-4 flex flex-col items-center justify-between text-center transition-all duration-300 cursor-default hover:-translate-y-1"
+                    >
+                      <div className="w-full flex flex-col items-center">
+                        {/* Avatar */}
+                        <div className="w-9 h-9 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl bg-white flex items-center justify-center relative shadow-xs border border-black/5 mb-1.5 sm:mb-3 group-hover:scale-105 transition-all duration-300">
+                          <span className="font-clash font-bold text-xs sm:text-lg text-[#111114]/80 group-hover:text-[#5231FF]">
+                            {member.initials}
+                          </span>
+                          <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full bg-[#F6F6F8] text-[#5231FF] flex items-center justify-center shadow-xs">
+                            <span className="material-symbols-outlined text-[9px] sm:text-[12px]">
+                              {member.badgeIcon}
+                            </span>
+                          </span>
+                        </div>
+
+                        <h4 className="font-clash font-bold text-[10px] sm:text-sm text-[#111114] leading-tight truncate w-full group-hover:text-[#5231FF] transition-colors">
+                          {member.name}
+                        </h4>
+                        <p className="font-general text-[8px] sm:text-[11px] text-[#6B6B74] font-medium leading-tight truncate w-full mt-0.5 sm:mt-1">
+                          {member.role}
+                        </p>
+                      </div>
+
+                      {/* Micro Socials */}
+                      <div className="flex items-center gap-1 sm:gap-1.5 pt-1.5 sm:pt-3 mt-1 sm:mt-2 border-t border-black/5 w-full justify-center">
+                        <a
+                          href={member.linkedin}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`${member.name} LinkedIn`}
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-[#5231FF] transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[10px] sm:text-[13px]">work</span>
+                        </a>
+                        <a
+                          href={member.instagram}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`${member.name} Instagram`}
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white flex items-center justify-center text-[#6B6B74] hover:text-[#5231FF] transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[10px] sm:text-[13px]">photo_camera</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </section>

@@ -133,7 +133,7 @@ export const INITIAL_EVENTS: EventItem[] = [
   }
 ];
 
-export const TEAM_MEMBERS = [
+export const NODAL_OFFICERS = [
   {
     name: 'Dr. K. M. Abdul Gafoor',
     role: 'Faculty Nodal Officer',
@@ -143,6 +143,27 @@ export const TEAM_MEMBERS = [
     linkedin: 'https://linkedin.com',
     instagram: 'https://instagram.com'
   },
+  {
+    name: 'Prof. Aisha Basheer',
+    role: 'Assistant Nodal Officer & IPR Lead',
+    initials: 'AB',
+    badgeIcon: 'school',
+    highlightColor: '#5231FF',
+    linkedin: 'https://linkedin.com',
+    instagram: 'https://instagram.com'
+  },
+  {
+    name: 'Dr. Muhammed Rashid',
+    role: 'Dean & Research Mentor',
+    initials: 'MR',
+    badgeIcon: 'psychology',
+    highlightColor: '#5231FF',
+    linkedin: 'https://linkedin.com',
+    instagram: 'https://instagram.com'
+  }
+];
+
+export const EXECUTIVE_MEMBERS = [
   {
     name: 'Fidha Rahman',
     role: 'Chief Executive Officer',
@@ -169,5 +190,66 @@ export const TEAM_MEMBERS = [
     highlightColor: '#5231FF',
     linkedin: 'https://linkedin.com',
     instagram: 'https://instagram.com'
+  },
+  {
+    name: 'Shamla Parveen',
+    role: 'Chief Creative Officer',
+    initials: 'SP',
+    badgeIcon: 'palette',
+    highlightColor: '#5231FF',
+    linkedin: 'https://linkedin.com',
+    instagram: 'https://instagram.com'
   }
 ];
+
+export const GENERAL_MEMBERS = [
+  {
+    name: 'Rihan K.',
+    role: 'Full-Stack Dev Lead',
+    initials: 'RK',
+    badgeIcon: 'terminal',
+    highlightColor: '#5231FF',
+    linkedin: 'https://linkedin.com',
+    instagram: 'https://instagram.com'
+  },
+  {
+    name: 'Fathima Sana',
+    role: 'UI/UX Design Lead',
+    initials: 'FS',
+    badgeIcon: 'brush',
+    highlightColor: '#5231FF',
+    linkedin: 'https://linkedin.com',
+    instagram: 'https://instagram.com'
+  },
+  {
+    name: 'Salman Faris',
+    role: 'IoT & Hardware Lead',
+    initials: 'SF',
+    badgeIcon: 'memory',
+    highlightColor: '#5231FF',
+    linkedin: 'https://linkedin.com',
+    instagram: 'https://instagram.com'
+  },
+  {
+    name: 'Ananya P.',
+    role: 'Grants & Finance Lead',
+    initials: 'AP',
+    badgeIcon: 'account_balance',
+    highlightColor: '#5231FF',
+    linkedin: 'https://linkedin.com',
+    instagram: 'https://instagram.com'
+  },
+  {
+    name: 'Ashiq Bilal',
+    role: 'Community & Events Lead',
+    initials: 'AB',
+    badgeIcon: 'campaign',
+    highlightColor: '#5231FF',
+    linkedin: 'https://linkedin.com',
+    instagram: 'https://instagram.com'
+  }
+];
+
+// Retain TEAM_MEMBERS for backward compatibility
+export const TEAM_MEMBERS = [...NODAL_OFFICERS, ...EXECUTIVE_MEMBERS, ...GENERAL_MEMBERS];
+
