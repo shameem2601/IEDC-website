@@ -268,11 +268,11 @@ export default function App() {
 
       <main className="w-full">
         {/* ==========================================
-            SECTION 1: HERO (Simple, Exciting & Clear Title)
+            SECTION 1: HERO (Full Viewport on Android & Desktop)
             ========================================== */}
         <section
           id="home"
-          className="relative min-h-[94vh] flex flex-col justify-center items-center pt-28 sm:pt-36 pb-20 px-6 lg:px-12 bg-[#FFFFFF] overflow-hidden"
+          className="relative min-h-screen min-h-[100dvh] w-full flex flex-col justify-center items-center pt-24 pb-12 sm:pt-28 sm:pb-16 px-6 lg:px-12 bg-[#FFFFFF] overflow-hidden"
         >
           {/* Subtle Ambient Radial Lighting */}
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] sm:w-[700px] h-[340px] sm:h-[480px] bg-gradient-to-tr from-[#5231FF]/8 via-[#7B5CFF]/5 to-transparent rounded-full blur-[90px] sm:blur-[130px] pointer-events-none" />
@@ -283,7 +283,7 @@ export default function App() {
             aria-hidden="true"
           />
 
-          <div className="max-w-5xl mx-auto text-center relative z-10 flex flex-col items-center">
+          <div className="max-w-5xl mx-auto text-center relative z-10 flex flex-col items-center my-auto">
             {/* 1. College & Partner Indicator */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
@@ -331,7 +331,7 @@ export default function App() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.24 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto mb-12 select-none"
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto select-none"
             >
               <a
                 href="#events"
@@ -349,59 +349,6 @@ export default function App() {
                 <Rocket className="w-4 h-4 text-[#5231FF]" />
                 <span>Submit Startup Idea</span>
               </button>
-            </motion.div>
-
-            {/* 5. Minimalist Live Status Highlights (Uncluttered, High Signal) */}
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.32 }}
-              className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-3 gap-3 text-left pt-6 border-t border-black/5"
-            >
-              <a
-                href="#events"
-                className="p-3.5 rounded-2xl bg-[#F6F6F8]/80 hover:bg-[#F6F6F8] border border-black/5 hover:border-[#5231FF]/20 transition-all duration-300 group flex items-center justify-between"
-              >
-                <div>
-                  <span className="font-spacemono text-[10px] uppercase font-bold text-[#5231FF] block">
-                    UPCOMING EVENTS
-                  </span>
-                  <span className="font-clash font-bold text-sm text-[#111114]">
-                    Hackathons &amp; Sprints
-                  </span>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-[#6B6B74] group-hover:text-[#5231FF] group-hover:translate-x-1 transition-all" />
-              </a>
-
-              <a
-                href="#about"
-                className="p-3.5 rounded-2xl bg-[#F6F6F8]/80 hover:bg-[#F6F6F8] border border-black/5 hover:border-[#5231FF]/20 transition-all duration-300 group flex items-center justify-between"
-              >
-                <div>
-                  <span className="font-spacemono text-[10px] uppercase font-bold text-[#5231FF] block">
-                    CAMPUS INCUBATION
-                  </span>
-                  <span className="font-clash font-bold text-sm text-[#111114]">
-                    Seed Grants &amp; Lab
-                  </span>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-[#6B6B74] group-hover:text-[#5231FF] group-hover:translate-x-1 transition-all" />
-              </a>
-
-              <a
-                href="#team"
-                className="p-3.5 rounded-2xl bg-[#F6F6F8]/80 hover:bg-[#F6F6F8] border border-black/5 hover:border-[#5231FF]/20 transition-all duration-300 group flex items-center justify-between"
-              >
-                <div>
-                  <span className="font-spacemono text-[10px] uppercase font-bold text-[#5231FF] block">
-                    MEET THE TEAM
-                  </span>
-                  <span className="font-clash font-bold text-sm text-[#111114]">
-                    Council &amp; Leads
-                  </span>
-                </div>
-                <ArrowRight className="w-3.5 h-3.5 text-[#6B6B74] group-hover:text-[#5231FF] group-hover:translate-x-1 transition-all" />
-              </a>
             </motion.div>
           </div>
         </section>
