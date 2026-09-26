@@ -90,7 +90,7 @@ export const JoinUsModal: React.FC<JoinUsModalProps> = ({ isOpen, onClose, siteS
                   Leadership Desk
                 </span>
                 <span className="text-xs sm:text-sm font-medium text-[#000000]">
-                  Dr. K. M. Abdul Gafoor (Faculty Nodal Officer)
+                  Faculty Nodal Officer &amp; Innovation Desk
                 </span>
               </div>
             </div>

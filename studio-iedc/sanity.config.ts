@@ -1,7 +1,8 @@
-﻿import {defineConfig} from 'sanity'
+import {defineConfig, Tool} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
+import {BulkMemberTool} from './tools/BulkMemberTool'
 
 // Custom desk structure: siteSettings as a singleton, events & members as lists
 const deskStructure = (S: any) =>
@@ -41,6 +42,15 @@ export default defineConfig({
   plugins: [
     structureTool({structure: deskStructure}),
     visionTool(),
+  ],
+
+  tools: (prev: Tool[]) => [
+    ...prev,
+    {
+      name: 'bulk-members',
+      title: 'Bulk Member Upload',
+      component: BulkMemberTool,
+    },
   ],
 
   schema: {

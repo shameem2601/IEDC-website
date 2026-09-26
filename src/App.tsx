@@ -7,11 +7,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, type Variants } from 'motion/react';
 import { sanityClient, SANITY_QUERIES } from './lib/sanity';
 import { isEventPast } from './lib/dateUtils';
-import {
-  INITIAL_EVENTS,
-  INITIAL_STATS,
-  TEAM_MEMBERS,
-} from './data/initialEvents';
+import { INITIAL_STATS } from './data/initialEvents';
 import { EventItem, TeamMember, SiteSettings } from './types';
 import { Navbar } from './components/Navbar';
 import { CursorSpotlight } from './components/CursorSpotlight';
@@ -53,9 +49,9 @@ const eventCardVariants: Variants = {
 };
 
 export default function App() {
-  const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [siteSettings, setSiteSettings] = useState<SiteSettings>({...INITIAL_STATS});
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(TEAM_MEMBERS);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -90,10 +86,10 @@ export default function App() {
         if (settingsData) setSiteSettings((prev) => ({...prev, ...settingsData}));
         // 2. Fetch Events
         const eventsData = await sanityClient.fetch(SANITY_QUERIES.events);
-        if (eventsData && eventsData.length > 0) setEvents(eventsData);
+        setEvents(eventsData || []);
         // 3. Fetch Team Members
         const teamData = await sanityClient.fetch(SANITY_QUERIES.teamMembers);
-        if (teamData && teamData.length > 0) setTeamMembers(teamData);
+        setTeamMembers(teamData || []);
       } catch (err) {
         console.warn('Sanity fetch fallback:', err);
       }
@@ -385,8 +381,15 @@ export default function App() {
             </motion.div>
 
             {/* Empty State */}
-            {displayedEvents.length === 0 ? (
-              <div className="py-20 text-center border border-dashed border-[#e5e5e5] rounded-[2px] bg-[#fafaf9] p-8">
+            {events.length === 0 ? (
+              <div className="py-20 text-center border border-dashed border-[#e5e5e5] rounded-[2px] bg-[#fafaf9] p-8 max-w-xl mx-auto">
+                <span className="material-symbols-outlined text-3xl text-[#888888] mb-2 block">event_busy</span>
+                <p className="font-instrument text-base text-[#666666]">
+                  No events published yet. Check back soon for upcoming hackathons, workshops, and innovation sprints!
+                </p>
+              </div>
+            ) : displayedEvents.length === 0 ? (
+              <div className="py-20 text-center border border-dashed border-[#e5e5e5] rounded-[2px] bg-[#fafaf9] p-8 max-w-xl mx-auto">
                 <p className="font-instrument text-base text-[#666666]">
                   {eventFilter === 'upcoming'
                     ? 'No upcoming events scheduled right now. Check back soon or view past initiatives.'
@@ -544,166 +547,184 @@ export default function App() {
               </p>
             </motion.div>
 
-            <div className="space-y-12 sm:space-y-16">
-              {/* TIER 1: NODAL OFFICERS & FACULTY ADVISORY */}
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <div className="flex items-center gap-2 mb-4 sm:mb-5">
-                  <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
-                  <h3 className="font-spacemono text-xs uppercase tracking-wider text-[#000000]">
-                    Faculty Leadership &amp; Nodal Officers
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                  {nodalOfficers.map((member) => (
-                    <div
-                      key={member.id}
-                      onClick={() => {
-                        setSelectedMember(member);
-                        setIsMemberModalOpen(true);
-                      }}
-                      className="optimus-card group rounded-[2px] p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer hover:border-[#888888] border border-[#e5e5e5] bg-white"
-                    >
-                      {/* Image */}
-                      <div className="w-full aspect-[4/3] sm:aspect-square rounded-[2px] bg-[#fafaf9] flex items-center justify-center overflow-hidden mb-3.5 border border-[#e5e5e5]">
-                        {member.photoUrl ? (
-                          <img
-                            src={member.photoUrl}
-                            alt={member.name}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
-                          />
-                        ) : (
-                          <span className="font-instrument font-normal text-2xl sm:text-3xl text-[#000000]">
-                            {member.initials}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Name & Role Only */}
-                      <div className="text-center">
-                        <h4 className="font-instrument font-normal text-base sm:text-lg text-[#000000] leading-snug truncate">
-                          {member.name}
-                        </h4>
-                        <p className="font-instrument text-xs text-[#666666] font-normal mt-1 truncate">
-                          {member.role}
-                        </p>
-                      </div>
+            {teamMembers.length === 0 ? (
+              <div className="py-16 text-center border border-dashed border-[#e5e5e5] rounded-[2px] bg-[#fafaf9] p-8 max-w-xl mx-auto">
+                <span className="material-symbols-outlined text-3xl text-[#888888] mb-2 block">groups</span>
+                <p className="font-instrument text-base text-[#666666]">
+                  Team roster is currently being updated in Sanity Studio.
+                </p>
+                <p className="font-instrument text-xs text-[#999999] mt-1">
+                  Upload student photos via the Bulk Member Upload tool in Sanity Studio to populate this roster.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-12 sm:space-y-16">
+                {/* TIER 1: NODAL OFFICERS & FACULTY ADVISORY */}
+                {nodalOfficers.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-50px' }}
+                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <div className="flex items-center gap-2 mb-4 sm:mb-5">
+                      <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
+                      <h3 className="font-spacemono text-xs uppercase tracking-wider text-[#000000]">
+                        Faculty Leadership &amp; Nodal Officers ({nodalOfficers.length})
+                      </h3>
                     </div>
-                  ))}
-                </div>
-              </motion.div>
 
-              {/* TIER 2: TEAM EXECUTIVES */}
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.5, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <div className="flex items-center gap-2 mb-4 sm:mb-5">
-                  <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
-                  <h3 className="font-spacemono text-xs uppercase tracking-wider text-[#000000]">
-                    Executive Council
-                  </h3>
-                </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                      {nodalOfficers.map((member) => (
+                        <div
+                          key={member.id}
+                          onClick={() => {
+                            setSelectedMember(member);
+                            setIsMemberModalOpen(true);
+                          }}
+                          className="optimus-card group rounded-[2px] p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 cursor-pointer hover:border-[#888888] border border-[#e5e5e5] bg-white"
+                        >
+                          {/* Image */}
+                          <div className="w-full aspect-[4/3] sm:aspect-square rounded-[2px] bg-[#fafaf9] flex items-center justify-center overflow-hidden mb-3.5 border border-[#e5e5e5]">
+                            {member.photoUrl ? (
+                              <img
+                                src={member.photoUrl}
+                                alt={member.name}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                              />
+                            ) : (
+                              <span className="font-instrument font-normal text-2xl sm:text-3xl text-[#000000]">
+                                {member.initials}
+                              </span>
+                            )}
+                          </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
-                  {executiveMembers.map((member) => (
-                    <div
-                      key={member.id}
-                      onClick={() => {
-                        setSelectedMember(member);
-                        setIsMemberModalOpen(true);
-                      }}
-                      className="optimus-card group rounded-[2px] p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-200 cursor-pointer hover:border-[#888888] border border-[#e5e5e5] bg-white"
-                    >
-                      {/* Image */}
-                      <div className="w-full aspect-square rounded-[2px] bg-[#fafaf9] flex items-center justify-center overflow-hidden mb-3 border border-[#e5e5e5]">
-                        {member.photoUrl ? (
-                          <img
-                            src={member.photoUrl}
-                            alt={member.name}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
-                          />
-                        ) : (
-                          <span className="font-instrument font-normal text-xl sm:text-2xl text-[#000000]">
-                            {member.initials}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Name & Role Only */}
-                      <div className="text-center">
-                        <h4 className="font-instrument font-normal text-xs sm:text-sm text-[#000000] leading-tight truncate">
-                          {member.name}
-                        </h4>
-                        <p className="font-instrument text-[11px] text-[#666666] mt-0.5 truncate">
-                          {member.role}
-                        </p>
-                      </div>
+                          {/* Name & Role Only */}
+                          <div className="text-center">
+                            <h4 className="font-instrument font-normal text-base sm:text-lg text-[#000000] leading-snug truncate">
+                              {member.name}
+                            </h4>
+                            <p className="font-instrument text-xs text-[#666666] font-normal mt-1 truncate">
+                              {member.role}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </motion.div>
+                  </motion.div>
+                )}
 
-              {/* TIER 3: NORMAL MEMBERS / DOMAIN LEADS */}
-              <motion.div
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <div className="flex items-center gap-2 mb-4 sm:mb-5">
-                  <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
-                  <h3 className="font-spacemono text-xs uppercase tracking-wider text-[#000000]">
-                    Domain Leads &amp; Innovators
-                  </h3>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-                  {generalMembers.map((member) => (
-                    <div
-                      key={member.id}
-                      onClick={() => {
-                        setSelectedMember(member);
-                        setIsMemberModalOpen(true);
-                      }}
-                      className="optimus-card group rounded-[2px] p-3 sm:p-3.5 flex flex-col justify-between transition-all duration-200 cursor-pointer hover:border-[#888888] border border-[#e5e5e5] bg-white"
-                    >
-                      {/* Image */}
-                      <div className="w-full aspect-square rounded-[2px] bg-[#fafaf9] flex items-center justify-center overflow-hidden mb-2.5 border border-[#e5e5e5]">
-                        {member.photoUrl ? (
-                          <img
-                            src={member.photoUrl}
-                            alt={member.name}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
-                          />
-                        ) : (
-                          <span className="font-instrument font-normal text-base sm:text-lg text-[#000000]">
-                            {member.initials}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Name & Role Only */}
-                      <div className="text-center">
-                        <h4 className="font-instrument font-normal text-xs sm:text-sm text-[#000000] leading-tight truncate">
-                          {member.name}
-                        </h4>
-                        <p className="font-instrument text-[11px] text-[#666666] mt-0.5 truncate">
-                          {member.role}
-                        </p>
-                      </div>
+                {/* TIER 2: TEAM EXECUTIVES */}
+                {executiveMembers.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-50px' }}
+                    transition={{ duration: 0.5, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <div className="flex items-center gap-2 mb-4 sm:mb-5">
+                      <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
+                      <h3 className="font-spacemono text-xs uppercase tracking-wider text-[#000000]">
+                        Executive Council ({executiveMembers.length})
+                      </h3>
                     </div>
-                  ))}
-                </div>
-              </motion.div>
-            </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
+                      {executiveMembers.map((member) => (
+                        <div
+                          key={member.id}
+                          onClick={() => {
+                            setSelectedMember(member);
+                            setIsMemberModalOpen(true);
+                          }}
+                          className="optimus-card group rounded-[2px] p-3.5 sm:p-4 flex flex-col justify-between transition-all duration-200 cursor-pointer hover:border-[#888888] border border-[#e5e5e5] bg-white"
+                        >
+                          {/* Image */}
+                          <div className="w-full aspect-square rounded-[2px] bg-[#fafaf9] flex items-center justify-center overflow-hidden mb-3 border border-[#e5e5e5]">
+                            {member.photoUrl ? (
+                              <img
+                                src={member.photoUrl}
+                                alt={member.name}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                              />
+                            ) : (
+                              <span className="font-instrument font-normal text-xl sm:text-2xl text-[#000000]">
+                                {member.initials}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Name & Role Only */}
+                          <div className="text-center">
+                            <h4 className="font-instrument font-normal text-xs sm:text-sm text-[#000000] leading-tight truncate">
+                              {member.name}
+                            </h4>
+                            <p className="font-instrument text-[11px] text-[#666666] mt-0.5 truncate">
+                              {member.role}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* TIER 3: NORMAL MEMBERS / DOMAIN LEADS */}
+                {generalMembers.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-50px' }}
+                    transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <div className="flex items-center gap-2 mb-4 sm:mb-5">
+                      <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
+                      <h3 className="font-spacemono text-xs uppercase tracking-wider text-[#000000]">
+                        Cohort Members &amp; Innovators ({generalMembers.length})
+                      </h3>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                      {generalMembers.map((member) => (
+                        <div
+                          key={member.id}
+                          onClick={() => {
+                            setSelectedMember(member);
+                            setIsMemberModalOpen(true);
+                          }}
+                          className="optimus-card group rounded-[2px] p-3 sm:p-3.5 flex flex-col justify-between transition-all duration-200 cursor-pointer hover:border-[#888888] border border-[#e5e5e5] bg-white"
+                        >
+                          {/* Image */}
+                          <div className="w-full aspect-square rounded-[2px] bg-[#fafaf9] flex items-center justify-center overflow-hidden mb-2.5 border border-[#e5e5e5]">
+                            {member.photoUrl ? (
+                              <img
+                                src={member.photoUrl}
+                                alt={member.name}
+                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
+                              />
+                            ) : (
+                              <span className="font-instrument font-normal text-base sm:text-lg text-[#000000]">
+                                {member.initials}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Name & Role Only */}
+                          <div className="text-center">
+                            <h4 className="font-instrument font-normal text-xs sm:text-sm text-[#000000] leading-tight truncate">
+                              {member.name}
+                            </h4>
+                            <p className="font-instrument text-[11px] text-[#666666] mt-0.5 truncate">
+                              {member.role}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            )}
           </div>
         </section>
       </main>
