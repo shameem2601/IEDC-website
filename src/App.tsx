@@ -3,17 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, type Variants } from 'motion/react';
 import { setDoc, doc } from 'firebase/firestore';
 import { db } from './lib/firebase';
 import { sanityClient, SANITY_QUERIES } from './lib/sanity';
+import { isEventPast } from './lib/dateUtils';
 import {
   INITIAL_EVENTS,
   INITIAL_STATS,
   TEAM_MEMBERS,
 } from './data/initialEvents';
-import { EventItem, TeamMember, SiteStats } from './types';
+import { EventItem, TeamMember, SiteStats, SiteSettings } from './types';
 import { Navbar } from './components/Navbar';
 import { CursorSpotlight } from './components/CursorSpotlight';
 import { StatsCounterGrid } from './components/StatsCounter';
@@ -56,7 +57,7 @@ const eventCardVariants: Variants = {
 
 export default function App() {
   const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
-  const [stats, setStats] = useState<SiteStats>(INITIAL_STATS);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>({...INITIAL_STATS});
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>(TEAM_MEMBERS);
 
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
@@ -65,6 +66,17 @@ export default function App() {
   const [isCmsModalOpen, setIsCmsModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+
+  const [eventFilter, setEventFilter] = useState<'all' | 'upcoming' | 'past'>('all');
+
+  const upcomingEvents = useMemo(() => events.filter((e) => !isEventPast(e)), [events]);
+  const pastEvents = useMemo(() => events.filter((e) => isEventPast(e)), [events]);
+
+  const displayedEvents = useMemo(() => {
+    if (eventFilter === 'upcoming') return upcomingEvents;
+    if (eventFilter === 'past') return pastEvents;
+    return events;
+  }, [eventFilter, events, upcomingEvents, pastEvents]);
 
   // User RSVP registration array (stored locally without requiring authentication)
   const [userRegistrations, setUserRegistrations] = useState<string[]>(() => {
@@ -112,9 +124,9 @@ export default function App() {
   useEffect(() => {
     const fetchSanityData = async () => {
       try {
-        // 1. Fetch Stats
-        const statsData = await sanityClient.fetch(SANITY_QUERIES.siteStats);
-        if (statsData) setStats(statsData);
+        // 1. Fetch Site Settings (stats + footer + social + content)
+        const settingsData = await sanityClient.fetch(SANITY_QUERIES.siteSettings);
+        if (settingsData) setSiteSettings((prev) => ({...prev, ...settingsData}));
         // 2. Fetch Events
         const eventsData = await sanityClient.fetch(SANITY_QUERIES.events);
         if (eventsData && eventsData.length > 0) setEvents(eventsData);
@@ -128,7 +140,7 @@ export default function App() {
     fetchSanityData();
     // Real-time listener: updates the website the moment you click "Publish" in Sanity!
     const subscription = sanityClient
-      .listen('*[_type in ["event", "teamMember", "siteStats"]]')
+      .listen('*[_type in ["event", "teamMember", "siteSettings"]]')
       .subscribe(() => {
         fetchSanityData();
       });
@@ -137,7 +149,7 @@ export default function App() {
 
   // Save Stats Handler
   const handleSaveStats = async (newStats: SiteStats) => {
-    setStats(newStats);
+    setSiteSettings((prev) => ({...prev, ...newStats}));
     try {
       await setDoc(doc(db, 'site_settings', 'stats'), newStats);
     } catch (err) {
@@ -289,10 +301,10 @@ export default function App() {
                 style={{ letterSpacing: '-0.035em' }}
                 className="font-instrument font-normal text-6xl sm:text-7xl md:text-8xl lg:text-[100px] text-[#000000] leading-[0.95]"
               >
-                Where ideas become ventures.
+                {siteSettings.heroHeadline || 'Where ideas become ventures.'}
               </h1>
               <p className="font-instrument text-base sm:text-xl text-[#000000] font-normal mt-4 tracking-tight">
-                IEDC MTM — Innovation &amp; Entrepreneurship Development Centre
+                {siteSettings.heroSubtitle || 'IEDC MTM — Innovation & Entrepreneurship Development Centre'}
               </p>
             </motion.div>
 
@@ -303,8 +315,7 @@ export default function App() {
               transition={{ duration: 0.4, delay: 0.12 }}
               className="font-instrument text-base sm:text-lg text-[#666666] max-w-2xl mx-auto leading-relaxed mb-10 font-normal"
             >
-              Empowering student builders to turn bold concepts into working prototypes, funded startups, and connect
-              with Kerala&apos;s leading mentors and tech cohorts.
+              {siteSettings.heroDescription || `Empowering student builders to turn bold concepts into working prototypes, funded startups, and connect with Kerala's leading mentors and tech cohorts.`}
             </motion.p>
 
             {/* 4. Action Buttons (Sharp corners 0-2px, base spacing 24px) */}
@@ -383,20 +394,15 @@ export default function App() {
                     style={{ letterSpacing: '-1.5px' }}
                     className="font-instrument font-normal text-3xl sm:text-4xl md:text-5xl text-[#000000] leading-tight mb-6"
                   >
-                    Fostering tomorrow’s founders right inside collegiate labs.
+                    {siteSettings.missionHeadline || 'Fostering tomorrow’s founders right inside collegiate labs.'}
                   </h2>
 
                   <p className="font-instrument text-base sm:text-lg text-[#666666] leading-relaxed mb-6 font-normal">
-                    The Innovation and Entrepreneurship Development Cell (IEDC) at MTM College serves
-                    as the prime institutional vehicle providing infrastructure, industry
-                    mentorship, prototyping kits, and intellectual property backing to transform
-                    student concepts into commercial ventures.
+                    {siteSettings.missionDescription || 'The Innovation and Entrepreneurship Development Cell (IEDC) at MTM College serves as the prime institutional vehicle providing infrastructure, industry mentorship, prototyping kits, and intellectual property backing to transform student concepts into commercial ventures.'}
                   </p>
 
                   <p className="font-instrument text-sm sm:text-base text-[#666666] leading-relaxed mb-8 font-normal">
-                    Partnered with Kerala Startup Mission (KSUM), we operate dedicated hackspaces,
-                    host continuous sprint weekends, and connect collegiate teams directly to angel
-                    funds and patent filing resources.
+                    {siteSettings.missionSubtext || 'Partnered with Kerala Startup Mission (KSUM), we operate dedicated hackspaces, host continuous sprint weekends, and connect collegiate teams directly to angel funds and patent filing resources.'}
                   </p>
                 </div>
 
@@ -424,141 +430,208 @@ export default function App() {
                 transition={{ duration: 0.5, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
                 className="lg:col-span-6"
               >
-                <StatsCounterGrid stats={stats} />
+                <StatsCounterGrid stats={siteSettings} />
               </motion.div>
             </div>
           </div>
         </section>
 
         {/* ==========================================
-            SECTION 3: UPCOMING EVENTS (#FFFFFF)
+            SECTION 3: EVENTS & CALENDAR (#FFFFFF)
             ========================================== */}
         <section
           id="events"
           className="w-full bg-[#FFFFFF] py-24 md:py-32 px-6 lg:px-12 relative border-b border-[#e5e5e5] scroll-mt-20"
         >
           <div className="max-w-7xl mx-auto">
-            {/* Section Header with Scroll Reveal */}
+            {/* Section Header with Scroll Reveal & Filter Tabs */}
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-4"
+              className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6"
             >
               <div>
                 <div className="inline-flex items-center gap-2 mb-3">
                   <span className="w-1.5 h-1.5 rounded-[1px] bg-[#888888]" />
                   <span className="font-spacemono uppercase tracking-widest text-[10px] text-[#888888]">
-                    WHAT&apos;S NEXT
+                    EVENTS &amp; CALENDAR
                   </span>
                 </div>
                 <h2
                   style={{ letterSpacing: '-1.5px' }}
                   className="font-instrument font-normal text-3xl sm:text-4xl md:text-5xl text-[#000000] leading-tight"
                 >
-                  Upcoming Events
+                  Events &amp; Initiatives
                 </h2>
               </div>
-              <div className="font-instrument text-sm text-[#666666] max-w-sm font-normal">
-                Hands-on sprints, founder clinics, and venture roundtables open to all passionate
-                builders. Click any event to open its complete image gallery and details.
+
+              {/* Interactive Calendar Tabs: All, Upcoming, Past */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex p-1 bg-[#fafaf9] border border-[#e5e5e5] rounded-[2px]">
+                  <button
+                    type="button"
+                    onClick={() => setEventFilter('all')}
+                    className={`px-3 py-1.5 text-xs font-spacemono uppercase tracking-wider rounded-[2px] transition-all cursor-pointer ${
+                      eventFilter === 'all'
+                        ? 'bg-[#000000] text-white shadow-sm'
+                        : 'text-[#666666] hover:text-[#000000]'
+                    }`}
+                  >
+                    All ({events.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEventFilter('upcoming')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-spacemono uppercase tracking-wider rounded-[2px] transition-all cursor-pointer ${
+                      eventFilter === 'upcoming'
+                        ? 'bg-[#000000] text-white shadow-sm'
+                        : 'text-[#666666] hover:text-[#000000]'
+                    }`}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Upcoming ({upcomingEvents.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEventFilter('past')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-spacemono uppercase tracking-wider rounded-[2px] transition-all cursor-pointer ${
+                      eventFilter === 'past'
+                        ? 'bg-[#000000] text-white shadow-sm'
+                        : 'text-[#666666] hover:text-[#000000]'
+                    }`}
+                  >
+                    <span>Past &amp; Archive ({pastEvents.length})</span>
+                  </button>
+                </div>
               </div>
             </motion.div>
 
-            {/* Events Grid with Staggered motion.div Entry */}
-            <motion.div
-              variants={eventsContainerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.12 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
-            >
-              {events.map((evt) => {
-                const isRegistered = userRegistrations.includes(evt.id);
-                const attachedCount = (evt.galleryImages?.length || 0) + 1;
+            {/* Empty State */}
+            {displayedEvents.length === 0 ? (
+              <div className="py-20 text-center border border-dashed border-[#e5e5e5] rounded-[2px] bg-[#fafaf9] p-8">
+                <p className="font-instrument text-base text-[#666666]">
+                  {eventFilter === 'upcoming'
+                    ? 'No upcoming events scheduled right now. Check back soon or view past initiatives.'
+                    : 'No past events archived yet.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setEventFilter('all')}
+                  className="mt-4 px-4 py-2 bg-[#000000] text-white text-xs font-spacemono uppercase tracking-wider rounded-[2px] hover:bg-neutral-800 transition-colors cursor-pointer"
+                >
+                  View All Events
+                </button>
+              </div>
+            ) : (
+              /* Events Grid with Staggered motion.div Entry */
+              <motion.div
+                key={eventFilter}
+                variants={eventsContainerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
+              >
+                {displayedEvents.map((evt) => {
+                  const isRegistered = userRegistrations.includes(evt.id);
+                  const attachedCount = (evt.galleryImages?.length || 0) + 1;
+                  const isPast = isEventPast(evt);
 
-                return (
-                  <motion.div
-                    key={evt.id}
-                    variants={eventCardVariants}
-                    whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                    onClick={() => handleOpenEventLightbox(evt)}
-                    className="optimus-card group rounded-[2px] overflow-hidden flex flex-col justify-between cursor-pointer border border-[#e5e5e5] bg-white hover:border-[#888888]"
-                  >
-                    <div>
-                      {/* 16:9 Cover Image Header */}
-                      <div className="relative w-full aspect-video bg-[#fafaf9] overflow-hidden border-b border-[#e5e5e5]">
-                        <img
-                          src={evt.coverImage}
-                          alt={evt.title}
-                          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-102"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                  return (
+                    <motion.div
+                      key={evt.id}
+                      variants={eventCardVariants}
+                      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                      onClick={() => handleOpenEventLightbox(evt)}
+                      className="optimus-card group rounded-[2px] overflow-hidden flex flex-col justify-between cursor-pointer border border-[#e5e5e5] bg-white hover:border-[#888888]"
+                    >
+                      <div>
+                        {/* 16:9 Cover Image Header */}
+                        <div className="relative w-full aspect-video bg-[#fafaf9] overflow-hidden border-b border-[#e5e5e5]">
+                          <img
+                            src={evt.coverImage}
+                            alt={evt.title}
+                            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-102"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
 
-                        {/* Top Overlays */}
-                        <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-white/95 text-[#000000] font-spacemono text-[10px] tracking-wider border border-[#e5e5e5]">
-                            <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
-                            {evt.dateBadge}
-                          </span>
+                          {/* Top Overlays */}
+                          <div className="absolute top-3 inset-x-3 flex items-center justify-between z-10">
+                            {isPast ? (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-neutral-900/90 text-neutral-200 font-spacemono text-[10px] tracking-wider border border-neutral-700 backdrop-blur-sm">
+                                <span className="w-1.5 h-1.5 rounded-[1px] bg-neutral-400" />
+                                CONCLUDED · {evt.dateBadge}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[2px] bg-white/95 text-[#000000] font-spacemono text-[10px] tracking-wider border border-[#e5e5e5] backdrop-blur-sm">
+                                <span className="w-1.5 h-1.5 rounded-[1px] bg-emerald-600 animate-pulse" />
+                                {evt.dateBadge}
+                              </span>
+                            )}
 
-                          <span className="w-7 h-7 rounded-[2px] bg-white/95 border border-[#e5e5e5] text-[#000000] flex items-center justify-center">
-                            <span className="material-symbols-outlined text-[16px]">
-                              {evt.icon}
+                            <span className="w-7 h-7 rounded-[2px] bg-white/95 border border-[#e5e5e5] text-[#000000] flex items-center justify-center">
+                              <span className="material-symbols-outlined text-[16px]">
+                                {evt.icon}
+                              </span>
                             </span>
-                          </span>
-                        </div>
+                          </div>
 
-                        {/* Bottom Overlay with Category & Gallery Counter Pill */}
-                        <div className="absolute bottom-3 inset-x-3 flex items-center justify-between z-10">
-                          <span className="font-spacemono uppercase text-[9px] tracking-widest text-white bg-black/80 px-2 py-0.5 rounded-[2px]">
-                            {evt.category}
-                          </span>
-
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-white text-[#000000] font-spacemono text-[9px] border border-[#e5e5e5]">
-                            <Images className="w-3 h-3 text-[#000000]" />
-                            <span>{attachedCount} Photos</span>
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Content Area */}
-                      <div className="p-6">
-                        <div className="flex items-center justify-between mb-2">
-                          {isRegistered && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-[2px] border border-emerald-200">
-                              <CheckCircle2 className="w-3 h-3" />
-                              RSVP Confirmed
+                          {/* Bottom Overlay with Category & Gallery Counter Pill */}
+                          <div className="absolute bottom-3 inset-x-3 flex items-center justify-between z-10">
+                            <span className="font-spacemono uppercase text-[9px] tracking-widest text-white bg-black/80 px-2 py-0.5 rounded-[2px]">
+                              {evt.category}
                             </span>
-                          )}
+
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-white text-[#000000] font-spacemono text-[9px] border border-[#e5e5e5]">
+                              <Images className="w-3 h-3 text-[#000000]" />
+                              <span>{attachedCount} Photos</span>
+                            </span>
+                          </div>
                         </div>
 
-                        <h3 className="font-instrument font-normal text-xl text-[#000000] leading-snug mb-2 group-hover:text-neutral-800 transition-colors">
-                          {evt.title}
-                        </h3>
+                        {/* Content Area */}
+                        <div className="p-6">
+                          <div className="flex items-center justify-between mb-2">
+                            {isPast ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-600 bg-neutral-100 px-2 py-0.5 rounded-[2px] border border-neutral-200">
+                                <CheckCircle2 className="w-3 h-3 text-neutral-500" />
+                                Concluded &amp; Archived
+                              </span>
+                            ) : isRegistered ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-[2px] border border-emerald-200">
+                                <CheckCircle2 className="w-3 h-3" />
+                                RSVP Confirmed
+                              </span>
+                            ) : null}
+                          </div>
 
-                        <p className="font-instrument font-normal text-xs sm:text-sm text-[#666666] leading-relaxed line-clamp-2">
-                          {evt.shortDescription}
-                        </p>
+                          <h3 className="font-instrument font-normal text-xl text-[#000000] leading-snug mb-2 group-hover:text-neutral-800 transition-colors">
+                            {evt.title}
+                          </h3>
+
+                          <p className="font-instrument font-normal text-xs sm:text-sm text-[#666666] leading-relaxed line-clamp-2">
+                            {evt.shortDescription}
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Card Action Footer */}
-                    <div className="px-6 pb-6 pt-1 flex items-center justify-between border-t border-[#f3f2ee]">
-                      <div className="inline-flex items-center gap-1 font-instrument text-xs text-[#000000] group-hover:underline">
-                        <span>View Gallery &amp; Details</span>
-                        <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+                      {/* Card Action Footer */}
+                      <div className="px-6 pb-6 pt-1 flex items-center justify-between border-t border-[#f3f2ee]">
+                        <div className="inline-flex items-center gap-1 font-instrument text-xs text-[#000000] group-hover:underline">
+                          <span>{isPast ? 'View Recap & Gallery' : 'View Gallery & Details'}</span>
+                          <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+                        </div>
+
+                        <span className="text-[10px] font-spacemono text-[#888888]">
+                          {evt.attendeeCount} {isPast ? 'attended' : 'registered'}
+                        </span>
                       </div>
-
-                      <span className="text-[10px] font-spacemono text-[#888888]">
-                        {evt.attendeeCount} registered
-                      </span>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            )}
           </div>
         </section>
 
@@ -774,7 +847,7 @@ export default function App() {
                 <span className="w-1.5 h-1.5 rounded-[1px] bg-[#888888]" />
               </div>
               <p className="font-instrument text-xs sm:text-sm text-[#666666] max-w-sm leading-relaxed">
-                Innovation and Entrepreneurship Development Cell, MTM College, Ponnani, Kerala
+                {siteSettings.footerDescription || 'Innovation and Entrepreneurship Development Cell, MTM College, Ponnani, Kerala'}
               </p>
             </div>
 
@@ -816,7 +889,7 @@ export default function App() {
               </span>
               <div className="flex items-center gap-2">
                 <a
-                  href="https://instagram.com"
+                  href={siteSettings.instagramUrl || 'https://instagram.com'}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="Instagram"
@@ -827,7 +900,7 @@ export default function App() {
                   </svg>
                 </a>
                 <a
-                  href="https://linkedin.com"
+                  href={siteSettings.linkedinUrl || 'https://linkedin.com'}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="LinkedIn"
@@ -838,7 +911,7 @@ export default function App() {
                   </svg>
                 </a>
                 <a
-                  href="https://twitter.com"
+                  href={siteSettings.twitterUrl || 'https://twitter.com'}
                   target="_blank"
                   rel="noreferrer"
                   aria-label="X (formerly Twitter)"
@@ -852,18 +925,18 @@ export default function App() {
 
               <div className="flex flex-col gap-1 font-instrument text-xs text-[#666666] mt-1">
                 <a
-                  href="mailto:hello@iedcmtm.in"
+                  href={`mailto:${siteSettings.contactEmail || 'hello@iedcmtm.in'}`}
                   className="hover:text-[#000000] transition-colors flex items-center gap-1.5"
                 >
                   <Mail className="w-3 h-3 text-[#888888]" />
-                  <span>hello@iedcmtm.in</span>
+                  <span>{siteSettings.contactEmail || 'hello@iedcmtm.in'}</span>
                 </a>
                 <a
-                  href="tel:+919847000000"
+                  href={`tel:${(siteSettings.contactPhone || '+91 98470 00000').replace(/\s/g, '')}`}
                   className="hover:text-[#000000] transition-colors flex items-center gap-1.5"
                 >
                   <Phone className="w-3 h-3 text-[#888888]" />
-                  <span>+91 98470 00000</span>
+                  <span>{siteSettings.contactPhone || '+91 98470 00000'}</span>
                 </a>
               </div>
             </div>
@@ -913,7 +986,7 @@ export default function App() {
       <CmsDashboardModal
         isOpen={isCmsModalOpen}
         onClose={() => setIsCmsModalOpen(false)}
-        stats={stats}
+        stats={siteSettings}
         onSaveStats={handleSaveStats}
         events={events}
         onSaveEvents={handleSaveEvents}

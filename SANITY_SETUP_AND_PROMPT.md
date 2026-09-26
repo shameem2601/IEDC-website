@@ -1,101 +1,104 @@
 # IEDC MTM — Sanity Studio & Antigravity Setup Guide
 
-This document contains everything you need to run **Sanity Studio** in a separate folder on your computer, connect it to your GitHub/website, or run it through **Antigravity**.
+This document explains everything you need to manage content using **Sanity Studio** or the built-in website admin tools.
 
 ---
 
-## 1. Why No Public CMS Button?
-The public CMS button has been completely removed from both the Navigation Bar and the Footer. Regular visitors to your live website **cannot see or access** any CMS buttons.
-
-### Private Admin Access (Only For You):
-If you ever want to quickly update content directly on the website without opening a terminal, you can privately trigger the dashboard using any of these 3 hidden methods:
-1. **Keyboard Shortcut:** Press **`Ctrl + Shift + A`** (or **`Cmd + Shift + A`** on Mac) anywhere on the page.
-2. **URL Hash:** Append **`#admin`** or **`?admin=true`** to the website URL (e.g. `https://your-site.com/#admin`).
-3. **Secret Triple-Click:** Triple-click on the footer text **`Made by IEDC MTM <3`**.
+## 1. Project Credentials
+- **Sanity Project ID:** `s4nzdr3x`
+- **Sanity Dataset:** `production`
+- **Studio Directory:** `studio-iedc` (located next to your website folder)
 
 ---
 
-## 2. Setting Up Sanity Studio On Your Computer (Folder `studio-iedc`)
+## 2. Dynamic Features Configured
 
-You can create a standalone folder on your local computer that runs the official Sanity Studio interface.
+### A. Live Counters & Claims (Students Engaged, Mission & Vision)
+In Sanity Studio under **Site Settings**:
+- **Students Engaged:** Editable number (e.g. `500+`). Change it anytime new students join.
+- **Events Hosted:** Live counter (e.g. `50+`).
+- **Startups Incubated:** Live counter (e.g. `10+`).
+- **Industry Partners:** Live counter (e.g. `15+`).
+- **Mission & Vision Section Text:**
+  - Mission Headline
+  - Mission Description
+  - Mission Subtext / KSUM Partnership narrative
+- **Footer Contact & Socials:**
+  - Email, phone, Instagram, LinkedIn, X, YouTube, and website links.
 
-### Step 1: Open your terminal
-Run this command from the parent folder (one level above your app folder):
-```bash
-npm create sanity@latest -- --project s4nzdr3x --dataset production --template clean --typescript --output-path studio-iedc
-```
+Any change published in Sanity Studio reflects on the live website immediately without redeploying!
 
-### Step 2: Start the Sanity Studio
+---
+
+### B. Events Calendar — Automatic Date Detection & Manual Override
+Each event in Sanity Studio (`schemaTypes/event.ts`) has:
+1. **Cover Image:** Separate 16:9 banner image with focal hotspot.
+2. **Gallery Images:** Array of photos — supports bulk uploading multiple photos at once.
+3. **Date & Time:** Real date (`eventDate`) and display text badge (`dateBadge`).
+4. **Calendar Past vs. Future Detection:**
+   - **⚡ Automatic (Default):** The website knows today's real-world date and time. When an event's date has passed, it automatically shifts from the **Upcoming** tab to the **Past & Archive** tab!
+   - **🟢 Force Upcoming:** Manually keep an event in the Upcoming section if needed.
+   - **⚪ Force Past (Completed / Archived):** Manually move an event to the Past archive even before the date passes.
+5. **Interactive Website Tabs:**
+   - `All Events (X)`
+   - `Upcoming (Y)` (with glowing green active pulse indicator)
+   - `Past & Archive (Z)` (with completed badge and recap mode)
+6. **Lightbox Modal:**
+   - For upcoming events: Displays RSVP registration button with confetti confirmation.
+   - For past events: Displays "Concluded & Archived" status, recap gallery, attendee metrics, and mentor highlights.
+
+---
+
+### C. Team Members — One-by-One and Bulk Upload
+You have 3 flexible ways to manage team members:
+
+#### 1. In Sanity Studio (One-by-One)
+Go to **Team Members** in Sanity Studio:
+- Add member name, role, hierarchy tier (Faculty Nodal Officer, Executive Council, Domain Lead/Member).
+- Upload high-resolution photo with hotspot cropping (or initials auto-display if no photo).
+- Add LinkedIn, Instagram, GitHub, and display order.
+
+#### 2. Bulk Upload via Photos (Built-in Website Admin)
+Press **`Ctrl + Shift + A`** anywhere on the website (or visit `#admin`):
+- Go to **Team Members & Bulk Upload**.
+- Click **Upload 20 Photos (Bulk)**.
+- Select up to 25 member photos from your computer at once. Profiles are auto-created with initials and names derived from filenames.
+
+#### 3. Bulk CSV / Spreadsheet Import for Sanity
+A converter script is included in `studio-iedc/scripts/convert-csv-to-ndjson.mjs`:
+1. Place your spreadsheet as `members.csv` (or use `studio-iedc/scripts/sample-members.csv`).
+2. Run:
+   ```bash
+   node scripts/convert-csv-to-ndjson.mjs sample-members.csv members.ndjson
+   ```
+3. Import to Sanity:
+   ```bash
+   npx sanity dataset import members.ndjson production
+   ```
+
+---
+
+## 3. How to Start Sanity Studio Locally
+Open your terminal and navigate to `studio-iedc`:
 ```bash
 cd studio-iedc
 npm run dev
 ```
-Sanity Studio will open at `http://localhost:3333`. Anything you publish there connects directly to dataset `production` under project `s4nzdr3x`.
+Open `http://localhost:3333` in your browser.
 
 ---
 
-## 3. The Exact Prompt To Paste Into Antigravity
-
-Copy and paste the prompt below into Antigravity to define all schemas and configure your standalone studio:
-
-```text
-Set up Sanity Studio schemas and integration for IEDC MTM College.
-
-Context:
-- Project ID: s4nzdr3x
-- Dataset: production
-- Studio Folder: studio-iedc (standalone folder next to the app folder)
-
-Requirements:
-1. Create the following 3 Sanity schemas inside `studio-iedc/schemaTypes/`:
-
-   a) `event.ts` (Event Schema):
-      - `title` (string, required)
-      - `slug` (slug, current)
-      - `dateBadge` (string, e.g. "12 OCT 2026")
-      - `category` (string, options: "36-HOUR SPRINT", "WORKSHOP", "FOUNDER CLINIC", "PANEL", "CONFERENCE")
-      - `icon` (string, material icon name, e.g. "bolt", "terminal", "school")
-      - `shortDescription` (text, max 160 characters)
-      - `fullDescription` (text / blockContent)
-      - `coverImage` (image with hotspot: true - uploaded separately as main 16:9 banner)
-      - `galleryImages` (array of images - allows bulk uploading 8-9 photos at once)
-      - `location` (string)
-      - `attendeeCount` (number)
-      - `registrationOpen` (boolean)
-
-   b) `teamMember.ts` (Team Member Schema):
-      - `name` (string, required)
-      - `initials` (string, 2 letters e.g. "FR")
-      - `role` (string, required, e.g. "Chief Executive Officer", "Faculty Nodal Officer")
-      - `hierarchy` (string, options: [
-          { title: "Faculty Leadership & Nodal Officer (2-3 per line)", value: "nodal" },
-          { title: "Executive Council (4 per line)", value: "executive" },
-          { title: "Domain Leads & Innovators (5 per line)", value: "member" }
-        ], required)
-      - `photo` (image with hotspot: true)
-      - `badgeIcon` (string, material icon name e.g. "verified", "flag", "code")
-      - `linkedin` (url)
-      - `instagram` (url)
-      - `order` (number, for sorting)
-
-   c) `siteStats.ts` (Site Metrics Singleton Schema):
-      - `eventsHosted` (number, default: 50)
-      - `studentsEngaged` (number, default: 500)
-      - `startupsIncubated` (number, default: 10)
-      - `industryPartners` (number, default: 15)
-
-2. Register all schemas in `schemaTypes/index.ts`.
-3. Provide CORS origin authorization command for Sanity:
-   `npx sanity cors add http://localhost:3000 --credentials`
-   `npx sanity cors add https://your-deployed-domain.com --credentials`
-4. Keep the Studio standalone in `studio-iedc` so non-technical team members can log into https://s4nzdr3x.sanity.studio/ or run it locally to manage events, bulk upload photos, and update team members safely without touching code.
+## 4. CORS Authorization
+If running locally on port 3000 or deploying to Vercel/Netlify:
+```bash
+npx sanity cors add http://localhost:3000 --credentials
+npx sanity cors add http://localhost:5173 --credentials
+npx sanity cors add https://your-domain.vercel.app --credentials
 ```
 
 ---
 
-## 4. How Content Automatically Updates on the Website
-Your website is already pre-configured with `@sanity/client` and `@sanity/image-url` in `src/lib/sanity.ts` referencing:
-- `projectId: 's4nzdr3x'`
-- `dataset: 'production'`
-
-Whenever you publish an event, add photos, or edit members in Sanity Studio, the live queries in `src/lib/sanity.ts` immediately fetch the updated documents without rebuilding the site!
+## 5. Secret Website Admin Shortcut
+To manage content directly on the website without opening a terminal:
+- Press **`Ctrl + Shift + A`** on keyboard.
+- Or open your website with **`#admin`** at the end of the URL.

@@ -24,18 +24,27 @@ export function urlFor(source: Parameters<typeof builder.image>[0]) {
 
 // Queries for fetching live data from Sanity if deployed
 export const SANITY_QUERIES = {
-  events: `*[_type == "event"] | order(dateBadge desc) {
+  events: `*[_type == "event"] | order(eventDate desc) {
     "id": _id,
     _id,
     title,
+    slug,
+    status,
+    eventDate,
     category,
     dateBadge,
     shortDescription,
     fullDescription,
     "coverImage": coverImage.asset->url,
     "galleryImages": galleryImages[].asset->url,
+    location,
+    time,
     attendeeCount,
-    icon
+    registrationOpen,
+    icon,
+    tags,
+    schedule,
+    mentors
   }`,
   teamMembers: `*[_type == "teamMember"] | order(order asc) {
     "id": _id,
@@ -47,12 +56,28 @@ export const SANITY_QUERIES = {
     hierarchy,
     linkedin,
     instagram,
+    github,
+    twitter,
     "photoUrl": photo.asset->url
   }`,
-  siteStats: `*[_type == "siteStats"][0] {
+  siteSettings: `*[_type == "siteSettings"][0] {
     eventsHosted,
     studentsEngaged,
     startupsIncubated,
-    industryPartners
+    industryPartners,
+    contactEmail,
+    contactPhone,
+    footerDescription,
+    instagramUrl,
+    linkedinUrl,
+    twitterUrl,
+    youtubeUrl,
+    websiteUrl,
+    missionHeadline,
+    missionDescription,
+    missionSubtext,
+    heroHeadline,
+    heroSubtitle,
+    heroDescription
   }`,
 };

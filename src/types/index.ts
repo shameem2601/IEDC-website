@@ -1,7 +1,10 @@
 export interface EventItem {
   id: string;
   title: string;
+  slug?: { current: string };
+  status?: 'auto' | 'upcoming' | 'past';
   date: string;
+  eventDate?: string;
   dateBadge: string;
   category: string;
   icon: string;
@@ -27,6 +30,8 @@ export interface TeamMember {
   highlightColor?: string;
   linkedin: string;
   instagram: string;
+  github?: string;
+  twitter?: string;
   photoUrl?: string;
   hierarchy: 'nodal' | 'executive' | 'member';
 }
@@ -36,6 +41,26 @@ export interface SiteStats {
   studentsEngaged: number;
   startupsIncubated: number;
   industryPartners: number;
+}
+
+export interface SiteSettings extends SiteStats {
+  // Footer contact
+  contactEmail?: string;
+  contactPhone?: string;
+  footerDescription?: string;
+  // Social media
+  instagramUrl?: string;
+  linkedinUrl?: string;
+  twitterUrl?: string;
+  youtubeUrl?: string;
+  websiteUrl?: string;
+  // Hero & Mission text
+  missionHeadline?: string;
+  missionDescription?: string;
+  missionSubtext?: string;
+  heroHeadline?: string;
+  heroSubtitle?: string;
+  heroDescription?: string;
 }
 
 export interface EventRegistration {
