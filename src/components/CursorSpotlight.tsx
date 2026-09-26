@@ -66,7 +66,7 @@ export const CursorSpotlight: React.FC = () => {
       aria-hidden="true"
       className="fixed top-0 left-0 w-[500px] h-[500px] -ml-[250px] -mt-[250px] rounded-full pointer-events-none z-30 transition-opacity duration-500 ease-out"
       style={{
-        background: 'radial-gradient(circle, rgba(82, 49, 255, 0.08) 0%, rgba(254, 78, 215, 0.03) 40%, rgba(82, 49, 255, 0) 70%)',
+        background: 'radial-gradient(circle, rgba(0, 0, 0, 0.035) 0%, rgba(136, 136, 136, 0.015) 45%, transparent 70%)',
         transform: 'translate3d(-999px, -999px, 0)',
         willChange: 'transform'
       }}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, X, Menu } from 'lucide-react';
+import { ArrowUpRight, X, Menu } from 'lucide-react';
+import { useScrollPosition } from '../hooks/useScrollPosition';
 
 interface NavbarProps {
   onOpenJoinModal: () => void;
@@ -23,8 +24,10 @@ const NAV_ITEMS: NavItem[] = [
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenJoinModal,
 }) => {
+  // Hook tracking scroll position to detect scrolling past hero & threshold of 100px
+  const { isScrolled } = useScrollPosition(100);
+
   const [activeSection, setActiveSection] = useState('home');
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Lock to prevent scroll-spy from intermediate state flickering during smooth navigation clicks
@@ -65,7 +68,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const scrollY = window.scrollY;
-          setIsScrolled(scrollY > 20);
 
           // If user clicked a navigation item, do NOT let passing sections interrupt the capsule slide
           if (isManualClickRef.current) {
@@ -164,28 +166,28 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-3 sm:px-6 pt-3 sm:pt-6 pointer-events-none">
+      <header className={`navbar-wrapper ${isScrolled ? 'is-scrolled' : ''}`}>
         <div
-          className={`pointer-events-auto w-full max-w-[1100px] h-16 rounded-full px-4 sm:px-6 flex items-center justify-between transition-all duration-400 liquid-glass-nav ${
+          className={`optimus-nav liquid-glass-nav pointer-events-auto flex items-center justify-between ${
             isScrolled ? 'is-scrolled' : ''
           }`}
         >
-          {/* Logo */}
+          {/* Logo (Instrument Sans 400 with technical precision) */}
           <button
             type="button"
             onClick={() => handleNavClick(NAV_ITEMS[0])}
-            className="group flex items-center gap-1.5 focus:outline-none select-none cursor-pointer bg-transparent border-0 p-0"
+            className="group flex items-center gap-2 focus:outline-none select-none cursor-pointer bg-transparent border-0 p-0"
           >
-            <span className="font-clash text-lg sm:text-xl text-[#111114] font-bold tracking-tight group-hover:text-[#5231FF] transition-colors">
+            <span className="font-instrument text-base sm:text-lg text-[#000000] font-normal tracking-tight">
               IEDC MTM
             </span>
-            <span className="w-2 h-2 rounded-full bg-[#5231FF] inline-block group-hover:scale-125 transition-transform duration-300 shadow-[0_0_8px_rgba(82,49,255,0.4)]" />
+            <span className="w-1.5 h-1.5 rounded-[1px] bg-[#888888] inline-block group-hover:bg-[#000000] transition-colors" />
           </button>
 
-          {/* Desktop Navigation with Perfectly Aligned Capsule */}
+          {/* Desktop Navigation with Frosted Liquid Glass Sliding Capsule */}
           <nav
             role="tablist"
-            className="hidden md:flex items-center gap-1 p-1 bg-black/[0.04] border border-black/[0.05] rounded-full relative"
+            className="hidden md:flex items-center gap-0.5 p-1 bg-white/40 backdrop-blur-md border border-[#e5e5e5]/80 rounded-[2px] relative shadow-[inset_0_1px_1px_rgba(255,255,255,0.7)]"
           >
             {NAV_ITEMS.map((item) => {
               const isActive = activeSection === item.id;
@@ -197,15 +199,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => handleNavClick(item)}
-                  className={`relative px-4 py-1.5 min-w-[74px] text-center text-sm font-semibold rounded-full transition-colors duration-200 select-none cursor-pointer flex items-center justify-center ${
-                    isActive ? 'text-[#111114]' : 'text-[#6B6B74] hover:text-[#111114]'
+                  className={`relative px-4 py-1 text-center text-xs sm:text-sm font-normal rounded-[2px] transition-colors duration-150 select-none cursor-pointer flex items-center justify-center font-instrument ${
+                    isActive ? 'text-[#000000] font-medium' : 'text-[#666666] hover:text-[#000000]'
                   }`}
                 >
-                  {/* Shared Layout Capsule with Exact inset-0 Pill Alignment */}
+                  {/* Frosted Glass Sliding Capsule */}
                   {isActive && (
                     <motion.div
                       layoutId="active-nav-capsule"
-                      className="absolute inset-0 bg-white rounded-full shadow-[0_2px_10px_rgba(82,49,255,0.12),0_1px_3px_rgba(0,0,0,0.08)] border border-black/[0.06] z-0"
+                      className="absolute inset-0 bg-white/85 backdrop-blur-md rounded-[2px] border border-white/90 shadow-[inset_0_1px_1.5px_rgba(255,255,255,1),0_2px_6px_rgba(0,0,0,0.04)] z-0"
                       transition={{
                         type: 'spring',
                         stiffness: 500,
@@ -221,40 +223,41 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Right Action Cluster: Join Us (No Login & No CMS Button) */}
-          <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* Join Us / Apply Button */}
+          {/* Right Action Cluster: Frosted Liquid Glass Join Us button */}
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onOpenJoinModal}
-              className="bg-[#5231FF] text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 rounded-full shadow-[0_4px_16px_rgba(82,49,255,0.28)] hover:shadow-[0_8px_24px_rgba(82,49,255,0.45)] hover:brightness-110 hover:scale-105 active:scale-95 transition-all duration-300 inline-flex items-center gap-1.5 cursor-pointer"
+              className="btn-liquid-glass text-xs font-medium px-3.5 py-1.5 inline-flex items-center gap-1.5 cursor-pointer font-instrument select-none"
             >
-              <Sparkles className="w-3.5 h-3.5" />
               <span>Join Us</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
 
             {/* Mobile Hamburger Toggle */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden w-9 h-9 rounded-full flex items-center justify-center text-[#111114] hover:bg-black/5 transition-colors focus:outline-none"
+              className="md:hidden w-8 h-8 rounded-[2px] bg-white/60 backdrop-blur-md border border-[#e5e5e5] flex items-center justify-center text-[#000000] hover:bg-white/90 transition-all focus:outline-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]"
               aria-label="Toggle Navigation"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Drawer (No Login) */}
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.25 }}
-            className="fixed top-20 left-4 right-4 z-40 max-w-[1100px] mx-auto liquid-glass-nav rounded-2xl p-5 flex flex-col gap-2 shadow-2xl border border-white/90 md:hidden"
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className={`fixed ${
+              isScrolled ? 'top-18 sm:top-20' : 'top-20 sm:top-22'
+            } left-4 right-4 z-40 max-w-[1100px] mx-auto bg-white/90 backdrop-blur-xl rounded-[2px] p-4 flex flex-col gap-2 shadow-2xl border border-white/60 md:hidden`}
           >
             <div className="flex flex-col gap-1">
               {NAV_ITEMS.map((item) => {
@@ -264,10 +267,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     key={item.id}
                     type="button"
                     onClick={() => handleNavClick(item)}
-                    className={`w-full text-left px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 cursor-pointer ${
+                    className={`w-full text-left px-3 py-2 rounded-[2px] font-instrument text-sm transition-colors cursor-pointer ${
                       isActive
-                        ? 'bg-[#5231FF] text-white font-bold shadow-sm'
-                        : 'text-[#6B6B74] hover:text-[#111114] hover:bg-black/5'
+                        ? 'bg-black text-white font-medium'
+                        : 'text-[#666666] hover:text-[#000000] hover:bg-black/5'
                     }`}
                   >
                     {item.label}
@@ -276,17 +279,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               })}
             </div>
 
-            <div className="pt-3 border-t border-black/5 flex items-center">
+            <div className="pt-3 border-t border-[#e5e5e5] flex items-center">
               <button
                 type="button"
                 onClick={() => {
                   setMobileMenuOpen(false);
                   onOpenJoinModal();
                 }}
-                className="w-full py-2.5 px-4 bg-[#5231FF] text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                className="w-full py-2.5 px-3 btn-liquid-glass rounded-[2px] text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer font-instrument"
               >
-                <Sparkles className="w-3.5 h-3.5" />
                 <span>Join Us</span>
+                <ArrowUpRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </motion.div>

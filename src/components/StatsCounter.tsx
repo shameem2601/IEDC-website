@@ -23,7 +23,6 @@ const StatItem: React.FC<StatProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // If targetValue changed after animation, smoothly transition to new value
     if (hasAnimated) {
       setCount(targetValue);
       return;
@@ -70,26 +69,26 @@ const StatItem: React.FC<StatProps> = ({
   return (
     <div
       ref={containerRef}
-      className="glass-liquid-card rounded-[24px] p-7 sm:p-8 flex flex-col justify-between cursor-default transition-all duration-300"
+      className="optimus-card rounded-[2px] p-6 sm:p-7 flex flex-col justify-between cursor-default transition-all duration-200"
     >
-      <div className="flex items-center justify-between mb-8">
-        <span className="w-10 h-10 rounded-2xl bg-[#5231FF]/10 text-[#5231FF] flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-[#5231FF] group-hover:text-white">
-          <span className="material-symbols-outlined text-[22px]">{icon}</span>
+      <div className="flex items-center justify-between mb-6">
+        <span className="w-8 h-8 rounded-[2px] border border-[#e5e5e5] bg-[#fafaf9] text-[#000000] flex items-center justify-center">
+          <span className="material-symbols-outlined text-[18px]">{icon}</span>
         </span>
-        <span className="font-spacemono text-[11px] text-[#6B6B74] tracking-wider uppercase">
+        <span className="font-spacemono text-[10px] text-[#888888] tracking-widest uppercase">
           {metricNumber}
         </span>
       </div>
 
       <div>
-        <div className="font-clash font-bold text-4xl sm:text-5xl text-[#5231FF] mb-2 leading-none flex items-center">
+        <div className="font-instrument text-4xl sm:text-5xl text-[#000000] font-normal mb-2 leading-none flex items-center tracking-tight">
           <span>{count}</span>
-          <span>+</span>
+          <span className="text-[#888888]">+</span>
         </div>
-        <div className="font-spacemono uppercase tracking-wider text-xs font-bold text-[#111114]">
+        <div className="font-instrument text-xs uppercase tracking-wider font-medium text-[#000000]">
           {label}
         </div>
-        <p className="font-general text-xs text-[#6B6B74] mt-2 leading-relaxed">
+        <p className="font-instrument text-xs text-[#666666] mt-2 leading-relaxed">
           {description}
         </p>
       </div>
@@ -108,7 +107,7 @@ export const StatsCounterGrid: React.FC<StatsCounterGridProps> = ({ stats }) => 
   const partnersVal = stats?.industryPartners ?? 15;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
       <StatItem
         icon="calendar_month"
         metricNumber="METRIC // 01"

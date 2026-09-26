@@ -25,6 +25,7 @@ export function urlFor(source: Parameters<typeof builder.image>[0]) {
 // Queries for fetching live data from Sanity if deployed
 export const SANITY_QUERIES = {
   events: `*[_type == "event"] | order(dateBadge desc) {
+    "id": _id,
     _id,
     title,
     category,
@@ -37,6 +38,7 @@ export const SANITY_QUERIES = {
     icon
   }`,
   teamMembers: `*[_type == "teamMember"] | order(order asc) {
+    "id": _id,
     _id,
     name,
     role,

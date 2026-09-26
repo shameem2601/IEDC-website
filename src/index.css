@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+:root {
+  --background: #ffffff;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+  --secondary: #fafaf9;
+  --secondary-foreground: #000000;
+  --muted: #f3f2ee;
+  --muted-foreground: #666666;
+  --accent: #888888;
+  --accent-foreground: #000000;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: #000000;
+  --radius: 2px;
+}
+
 @layer base {
   html, body {
     margin: 0;
@@ -8,24 +29,225 @@
   }
   body {
     overscroll-behavior: none;
-    background-color: #fcf8fc;
-    color: #1b1b1e;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: #ffffff;
+    color: #000000;
+    font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
+    letter-spacing: normal;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
   }
 }
 
-/* Custom Font Family Utilities */
+/* Optimus Typographic Tokens */
+.font-instrument {
+  font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+}
 .font-clash {
-  font-family: 'Clash Display', 'Space Grotesk', -apple-system, sans-serif;
+  font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+}
+.font-general {
+  font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+}
+.font-grotesk {
+  font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
 }
 .font-spacemono {
   font-family: 'Space Mono', monospace;
 }
-.font-general {
-  font-family: 'General Sans', 'Plus Jakarta Sans', sans-serif;
+
+/* Optimus Letter Spacing Scales */
+.tracking-display {
+  letter-spacing: -4px;
 }
-.font-grotesk {
-  font-family: 'Space Grotesk', sans-serif;
+.tracking-h2 {
+  letter-spacing: -1.5px;
+}
+
+/* Sharp Technical Cards (Optimus) */
+.glass-liquid-card,
+.optimus-card {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 2px;
+  position: relative;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-liquid-card:hover,
+.optimus-card:hover {
+  border-color: #888888;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* Master Navbar Floating Header Wrapper */
+.navbar-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  padding-top: 0px;
+  padding-left: 0px;
+  padding-right: 0px;
+  transition: padding 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: padding;
+}
+
+.navbar-wrapper.is-scrolled {
+  padding-top: 14px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (min-width: 640px) {
+  .navbar-wrapper.is-scrolled {
+    padding-top: 16px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+
+/* Sharp Navigation Bar (Optimus Glassmorphism) */
+.liquid-glass-nav,
+.optimus-nav {
+  position: relative;
+  width: 100%;
+  max-width: 80rem; /* max-w-7xl */
+  height: 4.25rem; /* h-17 */
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid transparent;
+  border-bottom: 1px solid #e5e5e5;
+  border-radius: 0px;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+  transform: translateZ(0);
+  transition: 
+    max-width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    padding 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    border-radius 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    backdrop-filter 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: max-width, height, background-color, border-radius, box-shadow;
+}
+
+@media (min-width: 1024px) {
+  .liquid-glass-nav,
+  .optimus-nav {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+/* Floating Glass-Morphism Style when scrolled past threshold */
+.liquid-glass-nav.is-scrolled,
+.optimus-nav.is-scrolled {
+  max-width: 1080px;
+  height: 3.5rem; /* h-14 */
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(229, 229, 229, 0.85);
+  border-radius: 4px;
+  box-shadow: 
+    0 18px 40px -6px rgba(0, 0, 0, 0.08),
+    0 6px 16px -2px rgba(0, 0, 0, 0.03),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -2px 6px -1px rgba(0, 0, 0, 0.05),
+    inset 0 0 12px 0 rgba(0, 0, 0, 0.02);
+}
+
+.liquid-glass-nav.is-scrolled:hover,
+.optimus-nav.is-scrolled:hover {
+  background: rgba(255, 255, 255, 0.80);
+  border-color: rgba(0, 0, 0, 0.22);
+  box-shadow: 
+    0 22px 48px -6px rgba(0, 0, 0, 0.10),
+    0 8px 20px -2px rgba(0, 0, 0, 0.04),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 1),
+    inset 0 -2px 8px -1px rgba(0, 0, 0, 0.06),
+    inset 0 0 14px 0 rgba(0, 0, 0, 0.025);
+}
+
+/* Frosted Liquid Glass Button */
+.btn-liquid-glass,
+.frosted-glass-btn {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  color: #000000;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.95), 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-liquid-glass:hover,
+.frosted-glass-btn:hover {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 1), 0 4px 14px rgba(0, 0, 0, 0.07);
+  transform: translateY(-0.5px);
+}
+
+.btn-liquid-glass:active,
+.frosted-glass-btn:active {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(0);
+}
+
+/* Optimus Button Stylings */
+.btn-optimus-primary {
+  background: #000000;
+  color: #ffffff;
+  border-radius: 2px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #000000;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.btn-optimus-primary:hover {
+  background: #222222;
+  border-color: #222222;
+}
+
+.btn-optimus-secondary {
+  background: transparent;
+  color: #000000;
+  border-radius: 2px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #e5e5e5;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.btn-optimus-secondary:hover {
+  border-color: #000000;
+  background: #fafaf9;
 }
 
 /* Hide scrollbars gracefully where desired */
@@ -37,119 +259,3 @@
   scrollbar-width: none;
 }
 
-/* Liquid Glass Navigation Bar */
-.liquid-glass-nav {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow: 0 8px 32px rgba(82, 49, 255, 0.05), 0 2px 10px rgba(0, 0, 0, 0.02);
-  transition: background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-}
-
-.liquid-glass-nav.is-scrolled {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 14px 40px rgba(82, 49, 255, 0.09), 0 2px 10px rgba(0, 0, 0, 0.04);
-  border-color: rgba(255, 255, 255, 0.98);
-}
-
-/* Liquid Glass Cards */
-.glass-liquid-card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.88);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.03);
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
-              border-color 0.4s ease;
-}
-
-.glass-liquid-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -130%;
-  width: 85%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.6) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: skewX(-22deg);
-  pointer-events: none;
-  transition: left 0.8s ease;
-  z-index: 5;
-}
-
-.glass-liquid-card:hover::before {
-  left: 150%;
-}
-
-.glass-liquid-card:hover {
-  border-color: rgba(82, 49, 255, 0.3);
-  box-shadow: 0 20px 40px -12px rgba(82, 49, 255, 0.14), 0 0 0 1px rgba(82, 49, 255, 0.08);
-}
-
-/* Ambient hero glow */
-@keyframes pulseGlow {
-  0%, 100% {
-    transform: scale(1) translate3d(0, 0, 0);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.15) translate3d(0, -18px, 0);
-    opacity: 1;
-  }
-}
-.animate-hero-glow {
-  animation: pulseGlow 10s ease-in-out infinite;
-  will-change: transform, opacity;
-}
-
-@keyframes floatParticle1 {
-  0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  50% { transform: translateY(-24px) translateX(14px) rotate(18deg); }
-}
-@keyframes floatParticle2 {
-  0%, 100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
-  50% { transform: translateY(-32px) translateX(-18px) rotate(-14deg); }
-}
-@keyframes floatParticle3 {
-  0%, 100% { transform: translateY(0px) translateX(0px); }
-  50% { transform: translateY(20px) translateX(12px); }
-}
-.particle-float-1 { animation: floatParticle1 7s ease-in-out infinite; }
-.particle-float-2 { animation: floatParticle2 9s ease-in-out infinite; }
-.particle-float-3 { animation: floatParticle3 8s ease-in-out infinite; }
-
-@keyframes floatChevron {
-  0%, 100% {
-    transform: translateY(0);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateY(8px);
-    opacity: 1;
-  }
-}
-.animate-float-chevron {
-  animation: floatChevron 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-}
-
-@keyframes heartBeat {
-  0%, 100% { transform: scale(1); }
-  14% { transform: scale(1.24); }
-  28% { transform: scale(1); }
-  42% { transform: scale(1.18); }
-  70% { transform: scale(1); }
-}
-.animate-heartbeat {
-  display: inline-block;
-  animation: heartBeat 2s infinite ease-in-out;
-  transform-origin: center;
-}
