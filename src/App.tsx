@@ -5,8 +5,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform, type Variants } from 'motion/react';
-import { setDoc, doc } from 'firebase/firestore';
-import { db } from './lib/firebase';
 import { sanityClient, SANITY_QUERIES } from './lib/sanity';
 import { isEventPast } from './lib/dateUtils';
 import {
@@ -14,13 +12,12 @@ import {
   INITIAL_STATS,
   TEAM_MEMBERS,
 } from './data/initialEvents';
-import { EventItem, TeamMember, SiteStats, SiteSettings } from './types';
+import { EventItem, TeamMember, SiteSettings } from './types';
 import { Navbar } from './components/Navbar';
 import { CursorSpotlight } from './components/CursorSpotlight';
 import { StatsCounterGrid } from './components/StatsCounter';
 import { EventLightboxModal } from './components/EventLightboxModal';
 import { JoinUsModal } from './components/JoinUsModal';
-import { CmsDashboardModal } from './components/CmsDashboardModal';
 import { MemberProfileModal } from './components/MemberProfileModal';
 import {
   ArrowRight,
@@ -63,7 +60,6 @@ export default function App() {
   const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
-  const [isCmsModalOpen, setIsCmsModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
 
@@ -78,47 +74,12 @@ export default function App() {
     return events;
   }, [eventFilter, events, upcomingEvents, pastEvents]);
 
-  // User RSVP registration array (stored locally without requiring authentication)
-  const [userRegistrations, setUserRegistrations] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem('iedc_event_rsvps');
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  });
-
   // Scroll animations
   const { scrollY, scrollYProgress } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 110]);
   const heroOpacity = useTransform(scrollY, [0, 420], [1, 0]);
   const heroScale = useTransform(scrollY, [0, 420], [1, 0.96]);
   const scrollCueOpacity = useTransform(scrollY, [0, 140], [1, 0]);
-
-  // Keyboard shortcut listener (Ctrl+Shift+A or Cmd+Shift+A) to open CMS Dashboard
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
-        e.preventDefault();
-        setIsCmsModalOpen((prev) => !prev);
-      }
-    };
-
-    const checkUrlParams = () => {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('admin') === 'true' || window.location.hash === '#admin') {
-        setIsCmsModalOpen(true);
-      }
-    };
-
-    checkUrlParams();
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('hashchange', checkUrlParams);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('hashchange', checkUrlParams);
-    };
-  }, []);
 
   // Live Sync with Sanity CMS
   useEffect(() => {
@@ -146,91 +107,6 @@ export default function App() {
       });
     return () => subscription.unsubscribe();
   }, []);
-
-  // Save Stats Handler
-  const handleSaveStats = async (newStats: SiteStats) => {
-    setSiteSettings((prev) => ({...prev, ...newStats}));
-    try {
-      await setDoc(doc(db, 'site_settings', 'stats'), newStats);
-    } catch (err) {
-      console.error('Failed to save stats to Firestore:', err);
-    }
-  };
-
-  // Save Events Handler
-  const handleSaveEvents = async (newEvents: EventItem[]) => {
-    setEvents(newEvents);
-    try {
-      for (const evt of newEvents) {
-        await setDoc(doc(db, 'events', evt.id), evt);
-      }
-    } catch (err) {
-      console.error('Failed to save events to Firestore:', err);
-    }
-  };
-
-  // Save Team Members Handler
-  const handleSaveTeamMembers = async (newMembers: TeamMember[]) => {
-    setTeamMembers(newMembers);
-    try {
-      for (const member of newMembers) {
-        await setDoc(doc(db, 'team_members', member.id), member);
-      }
-    } catch (err) {
-      console.error('Failed to save team members to Firestore:', err);
-    }
-  };
-
-  // Handle Register / Unregister for an event (No login required)
-  const handleRegisterToggle = async (eventId: string) => {
-    setUserRegistrations((prev) => {
-      const isAlready = prev.includes(eventId);
-      const next = isAlready ? prev.filter((id) => id !== eventId) : [...prev, eventId];
-      try {
-        localStorage.setItem('iedc_event_rsvps', JSON.stringify(next));
-      } catch {}
-
-      // Update local count immediately
-      setEvents((currentEvents) =>
-        currentEvents.map((evt) => {
-          if (evt.id === eventId) {
-            const currentCount = evt.attendeeCount || 0;
-            const newCount = isAlready ? Math.max(0, currentCount - 1) : currentCount + 1;
-            return { ...evt, attendeeCount: newCount };
-          }
-          return evt;
-        })
-      );
-
-      return next;
-    });
-  };
-
-  // Handle attaching an image URL to an event gallery
-  const handleAttachImage = async (eventId: string, imageUrl: string) => {
-    setEvents((currentEvents) => {
-      const updated = currentEvents.map((evt) => {
-        if (evt.id === eventId) {
-          const currentGallery = evt.galleryImages || [];
-          return {
-            ...evt,
-            galleryImages: [...currentGallery, imageUrl],
-          };
-        }
-        return evt;
-      });
-
-      const updatedEvent = updated.find((e) => e.id === eventId);
-      if (updatedEvent) {
-        setSelectedEvent(updatedEvent);
-        setDoc(doc(db, 'events', eventId), updatedEvent).catch((err) =>
-          console.error('Failed to persist attached image:', err)
-        );
-      }
-
-      return updated;
-    });
-  };
 
   const handleOpenEventLightbox = (event: EventItem) => {
     setSelectedEvent(event);
@@ -534,7 +410,6 @@ export default function App() {
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8"
               >
                 {displayedEvents.map((evt) => {
-                  const isRegistered = userRegistrations.includes(evt.id);
                   const attachedCount = (evt.galleryImages?.length || 0) + 1;
                   const isPast = isEventPast(evt);
 
@@ -598,12 +473,12 @@ export default function App() {
                                 <CheckCircle2 className="w-3 h-3 text-neutral-500" />
                                 Concluded &amp; Archived
                               </span>
-                            ) : isRegistered ? (
+                            ) : (
                               <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-[2px] border border-emerald-200">
-                                <CheckCircle2 className="w-3 h-3" />
-                                RSVP Confirmed
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                                Upcoming Session
                               </span>
-                            ) : null}
+                            )}
                           </div>
 
                           <h3 className="font-instrument font-normal text-xl text-[#000000] leading-snug mb-2 group-hover:text-neutral-800 transition-colors">
@@ -624,7 +499,7 @@ export default function App() {
                         </div>
 
                         <span className="text-[10px] font-spacemono text-[#888888]">
-                          {evt.attendeeCount} {isPast ? 'attended' : 'registered'}
+                          {evt.attendeeCount} {isPast ? 'attended' : 'capacity'}
                         </span>
                       </div>
                     </motion.div>
@@ -946,12 +821,6 @@ export default function App() {
           <div className="border-t border-[#e5e5e5] pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 font-instrument text-xs text-[#888888]">
             <span>© 2026 IEDC MTM College. All rights reserved.</span>
             <span
-              onClick={(e) => {
-                if (e.detail === 3) {
-                  setIsCmsModalOpen(true);
-                }
-              }}
-              title=""
               className="inline-flex items-center gap-1.5 text-xs text-[#000000] select-none cursor-default"
             >
               Made by IEDC MTM &lt;3
@@ -961,7 +830,7 @@ export default function App() {
       </footer>
 
       {/* ==========================================
-          MODALS
+          MODALS (100% Read-Only Presentation)
           ========================================== */}
       {/* 1. Expandable Lightbox Gallery Modal for Events */}
       <EventLightboxModal
@@ -971,30 +840,16 @@ export default function App() {
           setIsLightboxOpen(false);
           setSelectedEvent(null);
         }}
-        isRegistered={selectedEvent ? userRegistrations.includes(selectedEvent.id) : false}
-        onRegisterToggle={handleRegisterToggle}
-        onAttachImage={handleAttachImage}
       />
 
-      {/* 2. Join Us / Student Startup Proposal Modal */}
+      {/* 2. Join Us / Student Startup Info Modal */}
       <JoinUsModal
         isOpen={isJoinModalOpen}
         onClose={() => setIsJoinModalOpen(false)}
+        siteSettings={siteSettings}
       />
 
-      {/* 3. Comprehensive CMS Dashboard */}
-      <CmsDashboardModal
-        isOpen={isCmsModalOpen}
-        onClose={() => setIsCmsModalOpen(false)}
-        stats={siteSettings}
-        onSaveStats={handleSaveStats}
-        events={events}
-        onSaveEvents={handleSaveEvents}
-        teamMembers={teamMembers}
-        onSaveTeamMembers={handleSaveTeamMembers}
-      />
-
-      {/* 4. Member Profile Details Modal */}
+      {/* 3. Member Profile Details Modal */}
       <MemberProfileModal
         member={selectedMember}
         isOpen={isMemberModalOpen}
