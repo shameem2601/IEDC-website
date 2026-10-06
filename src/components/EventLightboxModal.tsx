@@ -96,7 +96,8 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
           initial={{ opacity: 0, scale: 0.98, y: 12 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: 12 }}
-          transition={{ duration: 0.2 }}
+          // Apple §4: critically damped spring for sheet/drawer
+          transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
           className="relative w-full max-w-6xl max-h-[92vh] bg-white rounded-[2px] shadow-2xl overflow-hidden flex flex-col z-10 border border-[#e5e5e5] font-instrument"
         >
           {/* Header Bar */}
@@ -117,23 +118,27 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                 onClick={handleShare}
                 className="w-8 h-8 rounded-[2px] border border-[#e5e5e5] bg-white hover:bg-[#fafaf9] text-[#000000] flex items-center justify-center transition-colors cursor-pointer"
                 title="Share event link"
               >
                 <Share2 className="w-3.5 h-3.5" />
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                 onClick={onClose}
                 className="w-8 h-8 rounded-[2px] border border-[#e5e5e5] bg-white hover:bg-[#000000] hover:text-white text-[#000000] flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Close Lightbox"
               >
                 <X className="w-4 h-4" />
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -210,8 +215,10 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                   {/* Previous / Next Arrows */}
                   {allImages.length > 1 && (
                     <>
-                      <button
+                      <motion.button
                         type="button"
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
@@ -220,10 +227,12 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                         aria-label="Previous photo"
                       >
                         <ChevronLeft className="w-5 h-5" />
-                      </button>
+                      </motion.button>
 
-                      <button
+                      <motion.button
                         type="button"
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveImageIndex((prev) => (prev + 1) % allImages.length);
@@ -232,7 +241,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                         aria-label="Next photo"
                       >
                         <ChevronRight className="w-5 h-5" />
-                      </button>
+                      </motion.button>
                     </>
                   )}
 
@@ -242,8 +251,10 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                       {activeImageIndex + 1} / {allImages.length}
                     </span>
 
-                    <button
+                    <motion.button
                       type="button"
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsZoomed(!isZoomed);
@@ -252,7 +263,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                       title={isZoomed ? 'Zoom out' : 'Zoom in'}
                     >
                       {isZoomed ? <ZoomOut className="w-3.5 h-3.5" /> : <ZoomIn className="w-3.5 h-3.5" />}
-                    </button>
+                    </motion.button>
                   </div>
                 </div>
 
@@ -406,13 +417,15 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
             </div>
 
             <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                 onClick={onClose}
                 className="px-5 py-2 rounded-[2px] font-medium text-xs bg-[#000000] text-white hover:bg-neutral-800 transition-colors cursor-pointer"
               >
                 Close
-              </button>
+              </motion.button>
             </div>
           </div>
         </motion.div>

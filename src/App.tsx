@@ -37,13 +37,15 @@ const eventsContainerVariants: Variants = {
 };
 
 const eventCardVariants: Variants = {
-  hidden: { opacity: 0, y: 16 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
+      // Apple §4: critically-damped spring, damping 1.0, response ~0.4
+      type: 'spring',
+      bounce: 0,
       duration: 0.4,
-      ease: [0.16, 1, 0.3, 1],
     },
   },
 };
@@ -153,7 +155,7 @@ export default function App() {
             <motion.div
               initial={{ opacity: 0, y: -6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
               className="inline-flex items-center gap-2 px-3 py-1 rounded-[2px] bg-[#fafaf9] border border-[#e5e5e5] mb-8 select-none"
             >
               <span className="w-1.5 h-1.5 rounded-[1px] bg-[#888888]" />
@@ -164,14 +166,15 @@ export default function App() {
 
             {/* 2. Headline: Instrument Sans weight 400 */}
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.05 }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.4, delay: 0.05 }}
               className="mb-6 max-w-4xl"
             >
               <h1
                 style={{ letterSpacing: '-0.035em' }}
                 className="font-instrument font-normal text-6xl sm:text-7xl md:text-8xl lg:text-[100px] text-[#000000] leading-[0.95]"
+                style={{ letterSpacing: '-0.035em', fontOpticalSizing: 'auto' } as React.CSSProperties}
               >
                 {siteSettings.heroHeadline || 'Where ideas become ventures.'}
               </h1>
@@ -182,9 +185,9 @@ export default function App() {
 
             {/* 3. Description: Deliberate Whitespace */}
             <motion.p
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.12 }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.4, delay: 0.12 }}
               className="font-instrument text-base sm:text-lg text-[#666666] max-w-2xl mx-auto leading-relaxed mb-10 font-normal"
             >
               {siteSettings.heroDescription || `Empowering student builders to turn bold concepts into working prototypes, funded startups, and connect with Kerala's leading mentors and tech cohorts.`}
@@ -192,27 +195,32 @@ export default function App() {
 
             {/* 4. Action Buttons (Sharp corners 0-2px, base spacing 24px) */}
             <motion.div
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.18 }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.4, delay: 0.18 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto select-none"
             >
-              <a
+              {/* Apple §1: whileTap for instant pointer-down response */}
+              <motion.a
                 href="#events"
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                 className="w-full sm:w-auto bg-[#000000] text-white font-medium text-sm px-6 py-3 rounded-[2px] border border-[#000000] hover:bg-neutral-800 transition-colors inline-flex items-center justify-center gap-2 cursor-pointer font-instrument"
               >
                 <span>Explore Events &amp; Sprints</span>
                 <ArrowRight className="w-4 h-4" />
-              </a>
+              </motion.a>
 
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                 onClick={() => setIsJoinModalOpen(true)}
                 className="w-full sm:w-auto bg-white hover:bg-[#fafaf9] text-[#000000] font-medium text-sm px-6 py-3 rounded-[2px] border border-[#e5e5e5] hover:border-black transition-colors inline-flex items-center justify-center gap-2 cursor-pointer font-instrument"
               >
                 <Rocket className="w-4 h-4 text-[#888888]" />
                 <span>Submit Startup Idea</span>
-              </button>
+              </motion.button>
             </motion.div>
           </motion.div>
 
@@ -251,7 +259,8 @@ export default function App() {
                 initial={{ opacity: 0, y: 32 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                // Apple §4: critically-damped spring (bounce:0, duration:0.4 = response ~0.4)
+                transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
                 className="lg:col-span-6 flex flex-col justify-between"
               >
                 <div>
@@ -299,7 +308,7 @@ export default function App() {
                 initial={{ opacity: 0, y: 32 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.5, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ type: 'spring', bounce: 0, duration: 0.5, delay: 0.12 }}
                 className="lg:col-span-6"
               >
                 <StatsCounterGrid stats={siteSettings} />
@@ -321,7 +330,7 @@ export default function App() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
               className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6"
             >
               <div>
@@ -420,7 +429,10 @@ export default function App() {
                     <motion.div
                       key={evt.id}
                       variants={eventCardVariants}
-                      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                      // Apple §4: momentum-carry hover lift — slight bounce because it's physical
+                      whileHover={{ y: -4, transition: { type: 'spring', bounce: 0.2, duration: 0.3 } }}
+                      // Apple §1: instant pointer-down press feedback
+                      whileTap={{ scale: 0.985, transition: { type: 'spring', bounce: 0, duration: 0.1 } }}
                       onClick={() => handleOpenEventLightbox(evt)}
                       className="optimus-card group rounded-[2px] overflow-hidden flex flex-col justify-between cursor-pointer border border-[#e5e5e5] bg-white hover:border-[#888888]"
                     >
@@ -526,7 +538,7 @@ export default function App() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
               className="max-w-2xl mb-12 sm:mb-16"
             >
               <div className="inline-flex items-center gap-2 mb-3">
@@ -565,7 +577,7 @@ export default function App() {
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-50px' }}
-                    transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ type: 'spring', bounce: 0, duration: 0.5 }}
                   >
                     <div className="flex items-center gap-2 mb-4 sm:mb-5">
                       <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
@@ -620,7 +632,7 @@ export default function App() {
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-50px' }}
-                    transition={{ duration: 0.5, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ type: 'spring', bounce: 0, duration: 0.5, delay: 0.05 }}
                   >
                     <div className="flex items-center gap-2 mb-4 sm:mb-5">
                       <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
@@ -675,7 +687,7 @@ export default function App() {
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-50px' }}
-                    transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                    transition={{ type: 'spring', bounce: 0, duration: 0.5, delay: 0.1 }}
                   >
                     <div className="flex items-center gap-2 mb-4 sm:mb-5">
                       <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
