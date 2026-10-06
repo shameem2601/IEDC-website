@@ -98,17 +98,17 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
           exit={{ opacity: 0, scale: 0.98, y: 12 }}
           // Apple §4: critically damped spring for sheet/drawer
           transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
-          className="relative w-full max-w-6xl max-h-[92vh] bg-white rounded-[2px] shadow-2xl overflow-hidden flex flex-col z-10 border border-[#e5e5e5] font-instrument"
+          className="relative w-full max-w-6xl max-h-[92vh] liquid-glass-panel rounded-3xl shadow-2xl overflow-hidden flex flex-col z-10 font-instrument"
         >
           {/* Header Bar */}
           <div className="px-6 py-4 border-b border-[#e5e5e5] flex items-center justify-between bg-white sticky top-0 z-20">
             <div className="flex items-center gap-3 truncate pr-4">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[2px] bg-[#fafaf9] border border-[#e5e5e5] text-[#000000] font-spacemono text-[10px] uppercase tracking-wider">
-                <span className={`w-1.5 h-1.5 rounded-[1px] ${isPast ? 'bg-neutral-500' : 'bg-[#000000]'}`} />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-xl bg-[#fafaf9] border border-[#e5e5e5] text-[#000000] font-spacemono text-[10px] uppercase tracking-wider">
+                <span className={`w-1.5 h-1.5 rounded-md ${isPast ? 'bg-neutral-500' : 'bg-[#000000]'}`} />
                 {event.category}
               </span>
               {isPast && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[2px] bg-neutral-900 text-neutral-200 font-spacemono text-[9px] uppercase tracking-wider">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-xl bg-neutral-900 text-neutral-200 font-spacemono text-[9px] uppercase tracking-wider">
                   Concluded · Archive
                 </span>
               )}
@@ -123,7 +123,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                 onClick={handleShare}
-                className="w-8 h-8 rounded-[2px] border border-[#e5e5e5] bg-white hover:bg-[#fafaf9] text-[#000000] flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-xl border border-[#e5e5e5] bg-white hover:bg-[#fafaf9] text-[#000000] flex items-center justify-center transition-colors cursor-pointer"
                 title="Share event link"
               >
                 <Share2 className="w-3.5 h-3.5" />
@@ -134,7 +134,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                 onClick={onClose}
-                className="w-8 h-8 rounded-[2px] border border-[#e5e5e5] bg-white hover:bg-[#000000] hover:text-white text-[#000000] flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-xl border border-[#e5e5e5] bg-white hover:bg-[#000000] hover:text-white text-[#000000] flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="Close Lightbox"
               >
                 <X className="w-4 h-4" />
@@ -148,7 +148,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('gallery')}
-                className={`px-3 py-1 rounded-[2px] transition-colors cursor-pointer text-xs font-instrument ${
+                className={`px-3 py-1 rounded-xl transition-colors cursor-pointer text-xs font-instrument ${
                   activeTab === 'gallery'
                     ? 'bg-[#000000] text-white font-medium'
                     : 'text-[#666666] hover:text-[#000000]'
@@ -159,7 +159,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('details')}
-                className={`px-3 py-1 rounded-[2px] transition-colors cursor-pointer text-xs font-instrument ${
+                className={`px-3 py-1 rounded-xl transition-colors cursor-pointer text-xs font-instrument ${
                   activeTab === 'details'
                     ? 'bg-[#000000] text-white font-medium'
                     : 'text-[#666666] hover:text-[#000000]'
@@ -171,7 +171,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveTab('schedule')}
-                  className={`px-3 py-1 rounded-[2px] transition-colors cursor-pointer text-xs font-instrument ${
+                  className={`px-3 py-1 rounded-xl transition-colors cursor-pointer text-xs font-instrument ${
                     activeTab === 'schedule'
                       ? 'bg-[#000000] text-white font-medium'
                       : 'text-[#666666] hover:text-[#000000]'
@@ -183,7 +183,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
             </div>
 
             {copySuccess && (
-              <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-[2px] border border-emerald-200">
+              <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-xl border border-emerald-200">
                 Link copied to clipboard!
               </span>
             )}
@@ -194,7 +194,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
             {activeTab === 'gallery' ? (
               <div className="p-4 sm:p-6 flex flex-col items-center">
                 {/* Main Selected Image Stage */}
-                <div className="relative w-full aspect-video max-h-[58vh] bg-black rounded-[2px] overflow-hidden flex items-center justify-center border border-[#e5e5e5]">
+                <div className="relative w-full aspect-video max-h-[58vh] bg-black rounded-xl overflow-hidden flex items-center justify-center border border-[#e5e5e5]">
                   {allImages.length > 0 ? (
                     <motion.img
                       key={activeImageIndex}
@@ -223,7 +223,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                           e.stopPropagation();
                           setActiveImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
                         }}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-[2px] bg-black/70 hover:bg-black text-white flex items-center justify-center transition-all backdrop-blur-xs cursor-pointer"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-black/70 hover:bg-black text-white flex items-center justify-center transition-all backdrop-blur-xs cursor-pointer"
                         aria-label="Previous photo"
                       >
                         <ChevronLeft className="w-5 h-5" />
@@ -237,7 +237,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                           e.stopPropagation();
                           setActiveImageIndex((prev) => (prev + 1) % allImages.length);
                         }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-[2px] bg-black/70 hover:bg-black text-white flex items-center justify-center transition-all backdrop-blur-xs cursor-pointer"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-xl bg-black/70 hover:bg-black text-white flex items-center justify-center transition-all backdrop-blur-xs cursor-pointer"
                         aria-label="Next photo"
                       >
                         <ChevronRight className="w-5 h-5" />
@@ -247,7 +247,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
 
                   {/* Image Counter & Zoom pill */}
                   <div className="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-none">
-                    <span className="font-spacemono text-[10px] text-white bg-black/75 backdrop-blur-xs px-2.5 py-1 rounded-[2px]">
+                    <span className="font-spacemono text-[10px] text-white bg-black/75 backdrop-blur-xs px-2.5 py-1 rounded-xl">
                       {activeImageIndex + 1} / {allImages.length}
                     </span>
 
@@ -259,7 +259,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                         e.stopPropagation();
                         setIsZoomed(!isZoomed);
                       }}
-                      className="pointer-events-auto p-1.5 rounded-[2px] bg-black/75 hover:bg-black text-white backdrop-blur-xs transition-colors cursor-pointer"
+                      className="pointer-events-auto p-1.5 rounded-xl bg-black/75 hover:bg-black text-white backdrop-blur-xs transition-colors cursor-pointer"
                       title={isZoomed ? 'Zoom out' : 'Zoom in'}
                     >
                       {isZoomed ? <ZoomOut className="w-3.5 h-3.5" /> : <ZoomIn className="w-3.5 h-3.5" />}
@@ -275,7 +275,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                         key={idx}
                         type="button"
                         onClick={() => setActiveImageIndex(idx)}
-                        className={`relative flex-shrink-0 w-20 sm:w-24 aspect-[16/10] rounded-[2px] overflow-hidden border transition-all cursor-pointer ${
+                        className={`relative flex-shrink-0 w-20 sm:w-24 aspect-[16/10] rounded-xl overflow-hidden border transition-all cursor-pointer ${
                           activeImageIndex === idx
                             ? 'border-[#000000] ring-2 ring-black/10'
                             : 'border-[#e5e5e5] opacity-60 hover:opacity-100'
@@ -308,8 +308,8 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-                  <div className="p-4 rounded-[2px] bg-[#fafaf9] border border-[#e5e5e5] flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-[2px] bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center">
+                  <div className="p-4 rounded-xl bg-[#fafaf9] border border-[#e5e5e5] flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-xl bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center">
                       <Calendar className="w-4 h-4" />
                     </span>
                     <div>
@@ -322,8 +322,8 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-[2px] bg-[#fafaf9] border border-[#e5e5e5] flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-[2px] bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center">
+                  <div className="p-4 rounded-xl bg-[#fafaf9] border border-[#e5e5e5] flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-xl bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center">
                       <MapPin className="w-4 h-4" />
                     </span>
                     <div>
@@ -336,8 +336,8 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-[2px] bg-[#fafaf9] border border-[#e5e5e5] flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-[2px] bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center">
+                  <div className="p-4 rounded-xl bg-[#fafaf9] border border-[#e5e5e5] flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-xl bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center">
                       <Users className="w-4 h-4" />
                     </span>
                     <div>
@@ -355,7 +355,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                 {event.mentors && event.mentors.length > 0 && (
                   <div className="pt-4">
                     <div className="inline-flex items-center gap-2 mb-3">
-                      <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
+                      <span className="w-1.5 h-1.5 rounded-md bg-[#000000]" />
                       <h4 className="font-instrument font-normal text-lg text-[#000000]">
                         Mentors &amp; Curators
                       </h4>
@@ -364,9 +364,9 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                       {event.mentors.map((m, i) => (
                         <div
                           key={i}
-                          className="p-3 rounded-[2px] border border-[#e5e5e5] bg-[#fafaf9] flex items-center gap-3"
+                          className="p-3 rounded-xl border border-[#e5e5e5] bg-[#fafaf9] flex items-center gap-3"
                         >
-                          <div className="w-9 h-9 rounded-[2px] bg-white border border-[#e5e5e5] text-[#000000] font-medium text-xs flex items-center justify-center font-instrument">
+                          <div className="w-9 h-9 rounded-xl bg-white border border-[#e5e5e5] text-[#000000] font-medium text-xs flex items-center justify-center font-instrument">
                             {m.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
                           </div>
                           <div>
@@ -383,13 +383,13 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
               /* Schedule Tab */
               <div className="p-6 sm:p-8 bg-white space-y-4">
                 <div className="inline-flex items-center gap-2 mb-2">
-                  <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
+                  <span className="w-1.5 h-1.5 rounded-md bg-[#000000]" />
                   <h3 className="font-instrument font-normal text-xl text-[#000000]">
                     Agenda &amp; Flow
                   </h3>
                 </div>
 
-                <div className="divide-y divide-[#e5e5e5] border border-[#e5e5e5] rounded-[2px] bg-[#fafaf9]">
+                <div className="divide-y divide-[#e5e5e5] border border-[#e5e5e5] rounded-xl bg-[#fafaf9]">
                   {event.schedule?.map((item, idx) => (
                     <div key={idx} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <span className="text-xs font-spacemono font-medium text-[#000000] shrink-0">
@@ -408,7 +408,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
           {/* Modal Footer (Read-Only Informational Bar, Zero Inputs) */}
           <div className="p-4 sm:px-6 py-4 bg-white border-t border-[#e5e5e5] flex flex-col sm:flex-row items-center justify-between gap-4 font-instrument">
             <div className="flex items-center gap-2 text-xs text-[#666666]">
-              <span className={`w-1.5 h-1.5 rounded-[1px] ${isPast ? 'bg-neutral-400' : 'bg-emerald-600'}`} />
+              <span className={`w-1.5 h-1.5 rounded-md ${isPast ? 'bg-neutral-400' : 'bg-emerald-600'}`} />
               <span>
                 {isPast
                   ? 'This event has concluded. Browse the photo gallery and cohort highlights above.'
@@ -422,7 +422,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                 whileTap={{ scale: 0.97 }}
                 transition={{ type: 'spring', bounce: 0, duration: 0.1 }}
                 onClick={onClose}
-                className="px-5 py-2 rounded-[2px] font-medium text-xs bg-[#000000] text-white hover:bg-neutral-800 transition-colors cursor-pointer"
+                className="px-5 py-2 rounded-xl font-medium text-xs bg-[#000000] text-white hover:bg-neutral-800 transition-colors cursor-pointer"
               >
                 Close
               </motion.button>

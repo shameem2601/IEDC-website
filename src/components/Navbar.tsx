@@ -166,11 +166,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <header className={`navbar-wrapper ${isScrolled ? 'is-scrolled' : ''}`}>
+      <header className={`navbar-wrapper is-scrolled`}>
         <div
-          className={`optimus-nav liquid-glass-nav pointer-events-auto flex items-center justify-between ${
-            isScrolled ? 'is-scrolled' : ''
-          }`}
+          className={`optimus-nav liquid-glass-nav pointer-events-auto flex items-center justify-between is-scrolled`}
         >
           {/* Logo (Instrument Sans 400 with technical precision) */}
           <button
@@ -181,13 +179,13 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="font-instrument text-base sm:text-lg text-[#000000] font-normal tracking-tight">
               IEDC MTM
             </span>
-            <span className="w-1.5 h-1.5 rounded-[1px] bg-[#888888] inline-block group-hover:bg-[#000000] transition-colors" />
+            <span className="w-1.5 h-1.5 rounded-md bg-[#888888] inline-block group-hover:bg-[#000000] transition-colors" />
           </button>
 
           {/* Desktop Navigation with Frosted Liquid Glass Sliding Capsule */}
           <nav
             role="tablist"
-            className="hidden md:flex items-center gap-0.5 p-1 bg-white/40 backdrop-blur-md border border-[#e5e5e5]/80 rounded-[2px] relative shadow-[inset_0_1px_1px_rgba(255,255,255,0.7)]"
+            className="hidden md:flex items-center gap-0.5 p-1 bg-white/40 backdrop-blur-md border border-[#e5e5e5]/80 rounded-xl relative shadow-[inset_0_1px_1px_rgba(255,255,255,0.7)]"
           >
             {NAV_ITEMS.map((item) => {
               const isActive = activeSection === item.id;
@@ -199,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   role="tab"
                   aria-selected={isActive}
                   onClick={() => handleNavClick(item)}
-                  className={`relative px-4 py-1 text-center text-xs sm:text-sm font-normal rounded-[2px] transition-colors duration-150 select-none cursor-pointer flex items-center justify-center font-instrument ${
+                  className={`relative px-4 py-1 text-center text-xs sm:text-sm font-normal rounded-xl transition-colors duration-150 select-none cursor-pointer flex items-center justify-center font-instrument ${
                     isActive ? 'text-[#000000] font-medium' : 'text-[#666666] hover:text-[#000000]'
                   }`}
                 >
@@ -207,7 +205,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {isActive && (
                     <motion.div
                       layoutId="active-nav-capsule"
-                      className="absolute inset-0 bg-white/85 backdrop-blur-md rounded-[2px] border border-white/90 shadow-[inset_0_1px_1.5px_rgba(255,255,255,1),0_2px_6px_rgba(0,0,0,0.04)] z-0"
+                      className="absolute inset-0 bg-white/85 backdrop-blur-md rounded-xl border border-white/90 shadow-[inset_0_1px_1.5px_rgba(255,255,255,1),0_2px_6px_rgba(0,0,0,0.04)] z-0"
                       transition={{
                         type: 'spring',
                         stiffness: 500,
@@ -238,7 +236,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden w-8 h-8 rounded-[2px] bg-white/60 backdrop-blur-md border border-[#e5e5e5] flex items-center justify-center text-[#000000] hover:bg-white/90 transition-all focus:outline-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]"
+              className="md:hidden w-8 h-8 rounded-xl bg-white/60 backdrop-blur-md border border-[#e5e5e5] flex items-center justify-center text-[#000000] hover:bg-white/90 transition-all focus:outline-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)]"
               aria-label="Toggle Navigation"
             >
               {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -257,7 +255,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             transition={{ duration: 0.2 }}
             className={`fixed ${
               isScrolled ? 'top-18 sm:top-20' : 'top-20 sm:top-22'
-            } left-4 right-4 z-40 max-w-[1100px] mx-auto bg-white/90 backdrop-blur-xl rounded-[2px] p-4 flex flex-col gap-2 shadow-2xl border border-white/60 md:hidden`}
+            } left-4 right-4 z-40 max-w-[1100px] mx-auto bg-white/90 backdrop-blur-xl rounded-xl p-4 flex flex-col gap-2 shadow-2xl border border-white/60 md:hidden`}
           >
             <div className="flex flex-col gap-1">
               {NAV_ITEMS.map((item) => {
@@ -267,7 +265,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     key={item.id}
                     type="button"
                     onClick={() => handleNavClick(item)}
-                    className={`w-full text-left px-3 py-2 rounded-[2px] font-instrument text-sm transition-colors cursor-pointer ${
+                    className={`w-full text-left px-3 py-2 rounded-xl font-instrument text-sm transition-colors cursor-pointer ${
                       isActive
                         ? 'bg-black text-white font-medium'
                         : 'text-[#666666] hover:text-[#000000] hover:bg-black/5'
@@ -286,7 +284,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   onOpenJoinModal();
                 }}
-                className="w-full py-2.5 px-3 btn-liquid-glass rounded-[2px] text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer font-instrument"
+                className="w-full py-2.5 px-3 btn-liquid-glass rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer font-instrument"
               >
                 <span>Join Us</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />

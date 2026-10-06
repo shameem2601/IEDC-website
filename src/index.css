@@ -40,10 +40,29 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  h1, h2, h3, h4, h5, h6 {
+  h1 {
     font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
-    font-weight: 400;
+    font-weight: 500; /* Apple: Emphasize with weight */
     font-optical-sizing: auto;
+    line-height: 1.05; /* Apple: tight leading for large text */
+    letter-spacing: -0.03em; /* Apple: negative tracking as it grows */
+  }
+  h2 {
+    font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 500;
+    font-optical-sizing: auto;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  h3, h4, h5, h6 {
+    font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+    font-weight: 500;
+    font-optical-sizing: auto;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  p {
+    line-height: 1.5; /* Apple: comfortable leading for body */
   }
 }
 
@@ -337,6 +356,15 @@
 
 .animate-slow-drift-reverse {
   animation: slow-drift-reverse 25s ease-in-out infinite alternate;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
 }
 
 /* Apple §14: Reduced Motion — cross-fade instead of slides/springs */

@@ -69,10 +69,10 @@ const StatItem: React.FC<StatProps> = ({
   return (
     <div
       ref={containerRef}
-      className="optimus-card rounded-[2px] p-6 sm:p-7 flex flex-col justify-between cursor-default transition-all duration-200"
+      className="optimus-card rounded-xl p-6 sm:p-7 flex flex-col justify-between cursor-default transition-all duration-200"
     >
       <div className="flex items-center justify-between mb-6">
-        <span className="w-8 h-8 rounded-[2px] border border-[#e5e5e5] bg-[#fafaf9] text-[#000000] flex items-center justify-center">
+        <span className="w-8 h-8 rounded-xl border border-[#e5e5e5] bg-[#fafaf9] text-[#000000] flex items-center justify-center">
           <span className="material-symbols-outlined text-[18px]">{icon}</span>
         </span>
         <span className="font-spacemono text-[10px] text-[#888888] tracking-widest uppercase">
