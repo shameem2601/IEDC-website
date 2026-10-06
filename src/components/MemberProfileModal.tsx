@@ -40,23 +40,24 @@ export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({
           initial={{ opacity: 0, scale: 0.98, y: 8 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: 8 }}
-          transition={{ duration: 0.18 }}
-          className="relative w-full max-w-md bg-white rounded-[2px] shadow-2xl border border-[#e5e5e5] p-6 sm:p-7 overflow-hidden z-10"
+          transition={{ type: 'spring', bounce: 0, duration: 0.3 }}
+          className="relative w-full max-w-md liquid-glass-panel rounded-3xl shadow-2xl p-6 sm:p-7 overflow-hidden z-10"
         >
           {/* Close button */}
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.95 }}
             onClick={onClose}
             aria-label="Close Profile"
-            className="absolute top-4 right-4 w-7 h-7 rounded-[2px] border border-[#e5e5e5] bg-white hover:bg-[#fafaf9] text-[#000000] flex items-center justify-center transition-colors cursor-pointer"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full border border-black/10 bg-white/50 hover:bg-white text-[#000000] flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
-          </button>
+          </motion.button>
 
           {/* Member Card Details */}
           <div className="flex flex-col items-center text-center">
             {/* Image / Avatar */}
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[2px] bg-[#fafaf9] border border-[#e5e5e5] overflow-hidden mb-4 flex items-center justify-center">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white/50 border border-white/40 overflow-hidden mb-4 flex items-center justify-center shadow-sm">
               {member.photoUrl ? (
                 <img
                   src={member.photoUrl}
@@ -71,7 +72,7 @@ export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({
             </div>
 
             {/* Hierarchy Badge */}
-            <span className="font-spacemono uppercase tracking-wider text-[10px] text-[#666666] border border-[#e5e5e5] bg-[#fafaf9] px-2.5 py-0.5 rounded-[2px] mb-2">
+            <span className="font-spacemono uppercase tracking-wider text-[10px] text-[#666666] border border-[#e5e5e5] bg-[#fafaf9] px-2.5 py-0.5 rounded-xl mb-2">
               {hierarchyLabel}
             </span>
 
@@ -92,7 +93,7 @@ export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({
                   href={member.linkedin}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full py-2.5 px-3 rounded-[2px] bg-[#fafaf9] hover:bg-[#000000] text-[#000000] hover:text-white border border-[#e5e5e5] hover:border-black font-instrument text-xs flex items-center justify-between transition-colors group"
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#fafaf9] hover:bg-[#000000] text-[#000000] hover:text-white border border-[#e5e5e5] hover:border-black font-instrument text-xs flex items-center justify-between transition-colors group"
                 >
                   <div className="flex items-center gap-2">
                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -109,7 +110,7 @@ export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({
                   href={member.instagram}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full py-2.5 px-3 rounded-[2px] bg-[#fafaf9] hover:bg-[#000000] text-[#000000] hover:text-white border border-[#e5e5e5] hover:border-black font-instrument text-xs flex items-center justify-between transition-colors group"
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#fafaf9] hover:bg-[#000000] text-[#000000] hover:text-white border border-[#e5e5e5] hover:border-black font-instrument text-xs flex items-center justify-between transition-colors group"
                 >
                   <div className="flex items-center gap-2">
                     <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">

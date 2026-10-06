@@ -32,22 +32,23 @@ export const JoinUsModal: React.FC<JoinUsModalProps> = ({ isOpen, onClose, siteS
           initial={{ opacity: 0, scale: 0.96, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 16 }}
-          transition={{ duration: 0.2 }}
-          className="relative w-full max-w-lg bg-white rounded-[2px] shadow-2xl p-6 sm:p-8 z-10 border border-[#e5e5e5]"
+          transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+          className="relative w-full max-w-lg liquid-glass-panel rounded-3xl shadow-2xl p-6 sm:p-8 z-10"
         >
           {/* Close button */}
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.95 }}
             onClick={onClose}
-            className="absolute top-5 right-5 w-8 h-8 rounded-[2px] border border-[#e5e5e5] bg-white hover:bg-black hover:text-white flex items-center justify-center transition-colors cursor-pointer text-[#000000]"
+            className="absolute top-5 right-5 w-8 h-8 rounded-full border border-black/10 bg-white/50 hover:bg-white flex items-center justify-center transition-colors cursor-pointer text-[#000000]"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
-          </button>
+          </motion.button>
 
           {/* Tag */}
           <div className="inline-flex items-center gap-2 mb-3">
-            <span className="w-1.5 h-1.5 rounded-[1px] bg-[#000000]" />
+            <span className="w-1.5 h-1.5 rounded-md bg-[#000000]" />
             <span className="font-spacemono uppercase tracking-widest text-[10px] text-[#888888]">
               STUDENT COHORTS &amp; VENTURES
             </span>
@@ -67,8 +68,8 @@ export const JoinUsModal: React.FC<JoinUsModalProps> = ({ isOpen, onClose, siteS
 
           {/* Official Contact Info Cards (Read-only, no inputs) */}
           <div className="space-y-3 mb-6">
-            <div className="p-3.5 rounded-[2px] bg-[#fafaf9] border border-[#e5e5e5] flex items-center gap-3">
-              <span className="w-8 h-8 rounded-[2px] bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center shrink-0">
+            <div className="p-3.5 rounded-xl bg-[#fafaf9] border border-[#e5e5e5] flex items-center gap-3">
+              <span className="w-8 h-8 rounded-xl bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center shrink-0">
                 <MapPin className="w-4 h-4" />
               </span>
               <div>
@@ -81,8 +82,8 @@ export const JoinUsModal: React.FC<JoinUsModalProps> = ({ isOpen, onClose, siteS
               </div>
             </div>
 
-            <div className="p-3.5 rounded-[2px] bg-[#fafaf9] border border-[#e5e5e5] flex items-center gap-3">
-              <span className="w-8 h-8 rounded-[2px] bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center shrink-0">
+            <div className="p-3.5 rounded-xl bg-[#fafaf9] border border-[#e5e5e5] flex items-center gap-3">
+              <span className="w-8 h-8 rounded-xl bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center shrink-0">
                 <Building className="w-4 h-4" />
               </span>
               <div>
@@ -97,10 +98,10 @@ export const JoinUsModal: React.FC<JoinUsModalProps> = ({ isOpen, onClose, siteS
 
             <a
               href={`mailto:${email}`}
-              className="p-3.5 rounded-[2px] bg-[#fafaf9] border border-[#e5e5e5] hover:border-[#000000] transition-colors flex items-center justify-between group"
+              className="p-3.5 rounded-xl bg-[#fafaf9] border border-[#e5e5e5] hover:border-[#000000] transition-colors flex items-center justify-between group"
             >
               <div className="flex items-center gap-3">
-                <span className="w-8 h-8 rounded-[2px] bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center shrink-0">
+                <span className="w-8 h-8 rounded-xl bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center shrink-0">
                   <Mail className="w-4 h-4" />
                 </span>
                 <div>
@@ -118,10 +119,10 @@ export const JoinUsModal: React.FC<JoinUsModalProps> = ({ isOpen, onClose, siteS
             {phone && (
               <a
                 href={`tel:${phone}`}
-                className="p-3.5 rounded-[2px] bg-[#fafaf9] border border-[#e5e5e5] hover:border-[#000000] transition-colors flex items-center justify-between group"
+                className="p-3.5 rounded-xl bg-[#fafaf9] border border-[#e5e5e5] hover:border-[#000000] transition-colors flex items-center justify-between group"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-[2px] bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center shrink-0">
+                  <span className="w-8 h-8 rounded-xl bg-white border border-[#e5e5e5] text-[#000000] flex items-center justify-center shrink-0">
                     <Phone className="w-4 h-4" />
                   </span>
                   <div>
@@ -149,7 +150,7 @@ export const JoinUsModal: React.FC<JoinUsModalProps> = ({ isOpen, onClose, siteS
             </button>
             <a
               href={`mailto:${email}?subject=Inquiry%20regarding%20IEDC%20MTM%20Cohort`}
-              className="px-5 py-2 bg-[#000000] text-white text-xs font-medium rounded-[2px] hover:bg-neutral-800 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+              className="px-5 py-2 bg-[#000000] text-white text-xs font-medium rounded-xl hover:bg-neutral-800 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
             >
               <span>Email Innovation Desk</span>
               <ArrowUpRight className="w-3.5 h-3.5" />

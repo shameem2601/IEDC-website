@@ -12,7 +12,7 @@ export const sanityClient = createClient({
   projectId: SANITY_PROJECT_ID,
   dataset: SANITY_DATASET,
   apiVersion: SANITY_API_VERSION,
-  useCdn: true,
+  useCdn: false, // Must be false — CDN caching returns stale data when real-time listener triggers re-fetch after publish
 });
 
 const builder = imageUrlBuilder(sanityClient);
