@@ -282,6 +282,7 @@ export const EventLightboxModal: React.FC<EventLightboxModalProps> = ({
                         }`}
                       >
                         <img
+                          loading="lazy"
                           src={imgUrl}
                           alt={`Thumbnail ${idx + 1}`}
                           className="w-full h-full object-cover"

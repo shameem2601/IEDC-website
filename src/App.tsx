@@ -522,6 +522,7 @@ export default function App() {
                         {/* 16:9 Cover Image Header */}
                         <div className="relative w-full aspect-video bg-[#fafaf9] overflow-hidden border-b border-[#e5e5e5]">
                           <img
+                            loading="lazy"
                             src={evt.coverImage}
                             alt={evt.title}
                             className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-102"
@@ -682,6 +683,7 @@ export default function App() {
                           <div className="w-full aspect-[4/3] sm:aspect-square rounded-xl bg-[#fafaf9] flex items-center justify-center overflow-hidden mb-3.5 border border-[#e5e5e5]">
                             {member.photoUrl ? (
                               <img
+                                loading="lazy"
                                 src={member.photoUrl}
                                 alt={member.name}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
@@ -737,6 +739,7 @@ export default function App() {
                           <div className="w-full aspect-square rounded-xl bg-[#fafaf9] flex items-center justify-center overflow-hidden mb-3 border border-[#e5e5e5]">
                             {member.photoUrl ? (
                               <img
+                                loading="lazy"
                                 src={member.photoUrl}
                                 alt={member.name}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
@@ -792,6 +795,7 @@ export default function App() {
                           <div className="w-full aspect-square rounded-xl bg-[#fafaf9] flex items-center justify-center overflow-hidden mb-2.5 border border-[#e5e5e5]">
                             {member.photoUrl ? (
                               <img
+                                loading="lazy"
                                 src={member.photoUrl}
                                 alt={member.name}
                                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-102"
@@ -881,7 +885,7 @@ export default function App() {
                 <a
                   href={siteSettings.instagramUrl || 'https://instagram.com'}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   aria-label="Instagram"
                   className="w-8 h-8 rounded-xl border border-[#e5e5e5] bg-[#fafaf9] flex items-center justify-center text-[#000000] hover:bg-[#000000] hover:text-white hover:border-[#000000] transition-colors"
                 >
@@ -892,7 +896,7 @@ export default function App() {
                 <a
                   href={siteSettings.linkedinUrl || 'https://linkedin.com'}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   aria-label="LinkedIn"
                   className="w-8 h-8 rounded-xl border border-[#e5e5e5] bg-[#fafaf9] flex items-center justify-center text-[#000000] hover:bg-[#000000] hover:text-white hover:border-[#000000] transition-colors"
                 >
@@ -903,7 +907,7 @@ export default function App() {
                 <a
                   href={siteSettings.twitterUrl || 'https://twitter.com'}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   aria-label="X (formerly Twitter)"
                   className="w-8 h-8 rounded-xl border border-[#e5e5e5] bg-[#fafaf9] flex items-center justify-center text-[#000000] hover:bg-[#000000] hover:text-white hover:border-[#000000] transition-colors"
                 >

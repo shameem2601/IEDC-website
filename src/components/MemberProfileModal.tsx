@@ -60,6 +60,7 @@ export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({
             <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white/50 border border-white/40 overflow-hidden mb-4 flex items-center justify-center shadow-sm">
               {member.photoUrl ? (
                 <img
+                  loading="lazy"
                   src={member.photoUrl}
                   alt={member.name}
                   className="w-full h-full object-cover"
@@ -92,7 +93,7 @@ export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({
                 <a
                   href={member.linkedin}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="w-full py-2.5 px-3 rounded-xl bg-[#fafaf9] hover:bg-[#000000] text-[#000000] hover:text-white border border-[#e5e5e5] hover:border-black font-instrument text-xs flex items-center justify-between transition-colors group"
                 >
                   <div className="flex items-center gap-2">
@@ -109,7 +110,7 @@ export const MemberProfileModal: React.FC<MemberProfileModalProps> = ({
                 <a
                   href={member.instagram}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="w-full py-2.5 px-3 rounded-xl bg-[#fafaf9] hover:bg-[#000000] text-[#000000] hover:text-white border border-[#e5e5e5] hover:border-black font-instrument text-xs flex items-center justify-between transition-colors group"
                 >
                   <div className="flex items-center gap-2">
